@@ -1,0 +1,11 @@
+Şifreler kısmına filtre ekle
+Kullanıcı kısmına kullanıcaya göre arama eklersin
+Log Kayıtlarına filtre eklenebilir
+Karanlık Tema eklenecek
+istekler ve dashboard kısmı yapılacak
+Bir kullanıcıya 1'den fazla şifre atanamaz validasyonu
+Admin, web panelini kullanarak nextion ekrana bir mesaj yazdırabilir.( Ekran kilitlensin ve giriş yapılamasın ) 
+nextion ekranların arayüzlerine stil eklenecek
+Ufak tefek Admin panel css değişiklikleri
+Parçalar ürün haline getirilecek
+mobil yapılacak
