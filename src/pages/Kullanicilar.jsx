@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { ref, onValue, set, remove, update } from 'firebase/database';
+import { ref, onValue, set, remove, update, get } from 'firebase/database';
 import { db } from '../firebase';
 
 export default function Kullanicilar() {
@@ -7,6 +7,9 @@ export default function Kullanicilar() {
   
   // Hangi satırın 3 nokta menüsü açık?
   const [acikMenuId, setAcikMenuId] = useState(null);
+
+  // ARAMA VE MENÜ STATE'LERİ
+  const [aramaMetni, setAramaMetni] = useState('');
   
   // Modallar için State'ler
   const [isEkleModalOpen, setIsEkleModalOpen] = useState(false);
@@ -33,6 +36,12 @@ export default function Kullanicilar() {
       } else { setKullanicilar([]); }
     });
   }, []);
+
+  // --- FİLTRELEME MANTIĞI ---
+  const filtrelenmisKullanicilar = kullanicilar.filter((user) => {
+    return user.Ad.toLowerCase().includes(aramaMetni.toLowerCase()) || 
+           user.Email.toLowerCase().includes(aramaMetni.toLowerCase());
+  });
 
   // --- YENİ KULLANICI EKLEME ---
   const handleKullaniciEkle = async (e) => {
@@ -107,84 +116,90 @@ export default function Kullanicilar() {
   return (
     <div className="bg-white rounded-xl shadow-sm p-6 relative">
       
-      {/* BAŞLIK VE YENİ EKLE BUTONU */}
-      <div className="flex justify-between items-center mb-6">
+     {/* ÜST BAŞLIK VE AKSİYONLAR */}
+      <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-6 gap-4">
         <div>
           <h2 className="text-xl font-bold text-gray-800">Kullanıcı Yönetimi</h2>
           <p className="text-sm text-gray-500">Sistemdeki tüm kayıtlı kullanıcılar</p>
         </div>
-        <button 
-          onClick={() => setIsEkleModalOpen(true)}
-          className="bg-indigo-600 hover:bg-indigo-700 text-white px-4 py-2 rounded-lg text-sm font-medium transition shadow-sm"
-        >
-          + Yeni Kullanıcı Ekle
-        </button>
+        
+        <div className="flex w-full md:w-auto gap-3">
+          {/* ARAMA ÇUBUĞU */}
+          <div className="relative flex-1 md:w-64">
+            <input 
+              type="text" 
+              placeholder="İsim veya e-posta ile ara..." 
+              value={aramaMetni}
+              onChange={(e) => setAramaMetni(e.target.value)}
+              className="w-full pl-10 pr-4 py-2 border border-gray-200 rounded-lg text-sm focus:ring-2 focus:ring-indigo-500 outline-none transition"
+            />
+            <svg className="w-5 h-5 absolute left-3 top-2.5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
+            </svg>
+          </div>
+
+          <button 
+            onClick={() => setIsEkleModalOpen(true)}
+            className="bg-indigo-600 hover:bg-indigo-700 text-white px-4 py-2 rounded-lg text-sm font-medium transition shadow-sm"
+          >
+            + Yeni Ekle
+          </button>
+        </div>
       </div>
 
-      {/* EKRAN MESAJI KUTUSU */}
+      {/* MESAJ KUTUSU */}
       {mesaj.metin && (
         <div className={`p-4 rounded-lg mb-6 text-sm font-medium ${mesaj.tip === 'basari' ? 'bg-green-50 text-green-700' : 'bg-red-50 text-red-700'}`}>
           {mesaj.metin}
         </div>
       )}
 
-      {/* KULLANICILAR TABLOSU */}
-      <table className="w-full text-left">
-        <thead>
-          <tr className="border-b text-gray-500 text-sm">
-            <th className="py-3 px-2">Ad Soyad</th>
-            <th className="py-3 px-2">E-posta</th>
-            <th className="py-3 px-2">Giriş Şifresi</th>
-            <th className="py-3 px-2 text-right">İşlemler</th>
-          </tr>
-        </thead>
-        <tbody>
-          {kullanicilar.map(u => (
-            <tr key={u.id} className="border-b hover:bg-gray-50">
-              <td className="py-4 px-2 font-medium text-gray-800">{u.Ad}</td>
-              <td className="py-4 px-2 text-gray-600">{u.Email}</td>
-              <td className="py-4 px-2 text-gray-600 font-mono">{u.Sifre || 'Atanmamış'}</td>
-              <td className="py-4 px-2 text-right relative">
-                
-                {/* 3 NOKTA BUTONU */}
-                <button 
-                  onClick={() => setAcikMenuId(acikMenuId === u.id ? null : u.id)}
-                  className="text-gray-400 hover:text-gray-700 p-2 rounded-full hover:bg-gray-200 transition"
-                >
-                  <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 5v.01M12 12v.01M12 19v.01M12 6a1 1 0 110-2 1 1 0 010 2zm0 7a1 1 0 110-2 1 1 0 010 2zm0 7a1 1 0 110-2 1 1 0 010 2z" />
-                  </svg>
-                </button>
-
-                {/* AÇILIR MENÜ (DROPDOWN) */}
-                {acikMenuId === u.id && (
-                  <div className="absolute right-8 top-10 mt-1 w-36 bg-white border border-gray-100 rounded-lg shadow-xl z-10 py-1 overflow-hidden">
-                    <button 
-                      onClick={() => { setSeciliKullanici(u); setIsPinModalOpen(true); setAcikMenuId(null); }} 
-                      className="w-full text-left px-4 py-2 text-sm text-indigo-600 hover:bg-indigo-50 font-medium"
-                    >
-                      PIN Ata
-                    </button>
-                    <button 
-                      onClick={() => { setSeciliKullanici(u); setEditForm({ Ad: u.Ad, Email: u.Email, Sifre: u.Sifre || '' }); setIsEditModalOpen(true); setAcikMenuId(null); }} 
-                      className="w-full text-left px-4 py-2 text-sm text-green-600 hover:bg-gray-50 font-medium"
-                    >
-                      Düzenle
-                    </button>
-                    <div className="border-t border-gray-100 my-1"></div>
-                    <button 
-                      onClick={() => handleKullaniciSil(u.id)} 
-                      className="w-full text-left px-4 py-2 text-sm text-red-600 hover:bg-red-50"
-                    >
-                      Kullanıcıyı Sil
-                    </button>
-                  </div>
-                )}
-              </td>
+      {/* KULLANICI TABLOSU */}
+      <div className="overflow-x-auto">
+        <table className="w-full text-left">
+          <thead>
+            <tr className="border-b text-gray-500 text-sm bg-gray-50">
+              <th className="py-3 px-4">Ad Soyad</th>
+              <th className="py-3 px-4">E-posta</th>
+              <th className="py-3 px-4">Giriş Şifresi</th>
+              <th className="py-3 px-4 text-right">İşlemler</th>
             </tr>
-          ))}
-        </tbody>
-      </table>
+          </thead>
+          <tbody>
+            {filtrelenmisKullanicilar.length === 0 ? (
+              <tr>
+                <td colSpan="4" className="text-center py-12 text-gray-400">
+                  {kullanicilar.length === 0 ? "Henüz kullanıcı yok." : "Arama kriterine uygun kullanıcı bulunamadı."}
+                </td>
+              </tr>
+            ) : (
+              filtrelenmisKullanicilar.map(u => (
+                <tr key={u.id} className="border-b hover:bg-gray-50 transition">
+                  <td className="py-4 px-4 font-medium text-gray-800">{u.Ad}</td>
+                  <td className="py-4 px-4 text-gray-600">{u.Email}</td>
+                  <td className="py-4 px-4 text-gray-600 font-mono">{u.Sifre || '---'}</td>
+                  <td className="py-4 px-4 text-right relative">
+                    <button onClick={() => setAcikMenuId(acikMenuId === u.id ? null : u.id)} className="text-gray-400 hover:text-gray-700 p-2 rounded-full hover:bg-gray-200 transition">
+                      <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
+                        <path d="M10 6a2 2 0 110-4 2 2 0 010 4zM10 12a2 2 0 110-4 2 2 0 010 4zM10 18a2 2 0 110-4 2 2 0 010 4z" />
+                      </svg>
+                    </button>
+
+                    {acikMenuId === u.id && (
+                      <div className="absolute right-12 top-10 mt-1 w-40 bg-white border border-gray-100 rounded-lg shadow-xl z-10 py-1 overflow-hidden">
+                        <button onClick={() => { setSeciliKullanici(u); setIsPinModalOpen(true); setAcikMenuId(null); }} className="w-full text-left px-4 py-2 text-sm text-indigo-600 hover:bg-indigo-50 font-medium">PIN Ata</button>
+                        <button onClick={() => { setSeciliKullanici(u); setEditForm({ Ad: u.Ad, Email: u.Email, Sifre: u.Sifre || '' }); setIsEditModalOpen(true); setAcikMenuId(null); }} className="w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-50">Düzenle</button>
+                        <div className="border-t border-gray-100 my-1"></div>
+                        <button onClick={() => handleKullaniciSil(u.id)} className="w-full text-left px-4 py-2 text-sm text-red-600 hover:bg-red-50 font-medium">Kullanıcıyı Sil</button>
+                      </div>
+                    )}
+                  </td>
+                </tr>
+              ))
+            )}
+          </tbody>
+        </table>
+      </div>
 
       {/* YENİ KULLANICI EKLE MODALI */}
       {isEkleModalOpen && (

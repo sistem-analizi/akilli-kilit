@@ -5,6 +5,10 @@ import { db } from '../firebase';
 export default function Sifreler() {
   const [sifreler, setSifreler] = useState([]);
   const [istatistik, setIstatistik] = useState({ toplam: 0, aktif: 0, bekleyen: 0 });
+  
+  // sıralam için state
+  const [sortConfig, setSortConfig] = useState({ key: null, direction: 'asc' });
+
 
   // Tarih ve saat karşılaştırması yapan yardımcı fonksiyon
   const durumHesapla = (baslangicStr, bitisStr) => {
@@ -61,6 +65,60 @@ export default function Sifreler() {
     }
   };
 
+  // --- BAŞLIĞA TIKLAYINCA ÇALIŞAN SIRALAMA FONKSİYONU ---
+  const handleSort = (key) => {
+    let direction = 'asc';
+    if (sortConfig.key === key && sortConfig.direction === 'asc') {
+      direction = 'desc'; // Zaten artansa, azalana çevir
+    }
+    setSortConfig({ key, direction });
+  };
+
+  // Verileri sıralama konfigürasyonuna göre düzenliyoruz
+  const siraliSifreler = [...sifreler].sort((a, b) => {
+    if (!sortConfig.key) return 0;
+
+    let aValue = a[sortConfig.key];
+    let bValue = b[sortConfig.key];
+
+    // Durum objesi içindeki metne (etikete) göre sıralamak için özel şart
+    if (sortConfig.key === 'durum') {
+      aValue = a.durum.etiket;
+      bValue = b.durum.etiket;
+    }
+
+    if (aValue < bValue) {
+      return sortConfig.direction === 'asc' ? -1 : 1;
+    }
+    if (aValue > bValue) {
+      return sortConfig.direction === 'asc' ? 1 : -1;
+    }
+    return 0;
+  });
+
+  // Sıralama İkonunu Çizen Yardımcı Bileşen
+  const SortIcon = ({ columnKey }) => {
+    if (sortConfig.key !== columnKey) {
+      return ( // Tıklanmamış nötr durum (Senin attığın resimdeki gibi ↕)
+        <svg className="w-4 h-4 text-gray-400 opacity-50" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M8 9l4-4 4 4m0 6l-4 4-4-4"></path>
+        </svg>
+      );
+    }
+    if (sortConfig.direction === 'asc') {
+      return ( // Artan sıralama (↑)
+        <svg className="w-4 h-4 text-indigo-600 font-bold" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="3" d="M5 15l7-7 7 7"></path>
+        </svg>
+      );
+    }
+    return ( // Azalan sıralama (↓)
+      <svg className="w-4 h-4 text-indigo-600 font-bold" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="3" d="M19 9l-7 7-7-7"></path>
+      </svg>
+    );
+  };
+
   return (
     <div>
       <div className="mb-8">
@@ -81,28 +139,44 @@ export default function Sifreler() {
         <div className="bg-white rounded-xl shadow-sm p-6 border border-gray-100 border-l-4 border-l-yellow-500">
           <div className="text-gray-500 text-sm font-medium mb-1">Saati Bekleyen Şifreler</div>
           <div className="text-3xl font-bold text-yellow-600">{istatistik.bekleyen}</div>
-        </div>
+        </div>  
       </div>
 
-      {/* ŞİFRELER TABLOSU */}
       <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-6 overflow-x-auto">
         <h3 className="text-lg font-bold text-gray-800 mb-4">Tüm PIN Kodları</h3>
-        <table className="w-full text-left">
+        <table className="w-full text-left border-collapse">
           <thead>
             <tr className="border-b text-gray-500 text-sm">
-              <th className="py-3 px-2">PIN Kodu</th>
-              <th className="py-3 px-2">Kullanıcı</th>
-              <th className="py-3 px-2">Başlangıç</th>
-              <th className="py-3 px-2">Bitiş</th>
-              <th className="py-3 px-2">Durum</th>
+              
+              {/* TIKLANABİLİR BAŞLIKLAR (Sıralama İşlemi) */}
+              <th className="py-3 px-2 cursor-pointer hover:bg-gray-50 transition select-none" onClick={() => handleSort('pin')}>
+                <div className="flex items-center gap-2">PIN Kodu <SortIcon columnKey="pin" /></div>
+              </th>
+              
+              <th className="py-3 px-2 cursor-pointer hover:bg-gray-50 transition select-none" onClick={() => handleSort('KullaniciAdi')}>
+                <div className="flex items-center gap-2">Kullanıcı <SortIcon columnKey="KullaniciAdi" /></div>
+              </th>
+              
+              <th className="py-3 px-2 cursor-pointer hover:bg-gray-50 transition select-none" onClick={() => handleSort('Baslangic')}>
+                <div className="flex items-center gap-2">Başlangıç <SortIcon columnKey="Baslangic" /></div>
+              </th>
+              
+              <th className="py-3 px-2 cursor-pointer hover:bg-gray-50 transition select-none" onClick={() => handleSort('Bitis')}>
+                <div className="flex items-center gap-2">Bitiş <SortIcon columnKey="Bitis" /></div>
+              </th>
+              
+              <th className="py-3 px-2 cursor-pointer hover:bg-gray-50 transition select-none" onClick={() => handleSort('durum')}>
+                <div className="flex items-center gap-2">Durum <SortIcon columnKey="durum" /></div>
+              </th>
+              
               <th className="py-3 px-2 text-right">İşlem</th>
             </tr>
           </thead>
           <tbody>
-            {sifreler.length === 0 ? (
+            {siraliSifreler.length === 0 ? (
               <tr><td colSpan="6" className="text-center py-8 text-gray-500">Sistemde kayıtlı şifre bulunmuyor.</td></tr>
             ) : (
-              sifreler.map((sifre) => (
+              siraliSifreler.map((sifre) => (
                 <tr key={sifre.pin} className="border-b hover:bg-gray-50">
                   <td className="py-4 px-2 font-mono font-bold text-indigo-600">{sifre.pin}</td>
                   <td className="py-4 px-2 font-medium text-gray-800">{sifre.KullaniciAdi}</td>
@@ -114,10 +188,7 @@ export default function Sifreler() {
                     </span>
                   </td>
                   <td className="py-4 px-2 text-right">
-                    <button 
-                      onClick={() => handleSifreIptal(sifre.pin)}
-                      className="text-red-500 hover:text-red-700 text-sm font-semibold hover:underline"
-                    >
+                    <button onClick={() => handleSifreIptal(sifre.pin)} className="text-red-500 hover:text-red-700 text-sm font-semibold hover:underline">
                       İptal Et
                     </button>
                   </td>

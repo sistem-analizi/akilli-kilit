@@ -5,6 +5,12 @@ import { db } from '../firebase';
 export default function Loglar() {
   const [loglar, setLoglar] = useState([]);
 
+  // FİLTRELEME VE ARAMA STATE'LERİ
+  const [aramaMetni, setAramaMetni] = useState('');
+  const [filtreDurum, setFiltreDurum] = useState('Tümü');
+  const [filtreBaslangic, setFiltreBaslangic] = useState('');
+  const [filtreBitis, setFiltreBitis] = useState('');
+
   useEffect(() => {
     // Firebase'den Giriş Logları düğümünü dinliyoruz
     const logRef = ref(db, 'KilitSistemi/GirisLoglari');
@@ -33,6 +39,33 @@ export default function Loglar() {
     });
   }, []);
 
+  // FİLTRE TEMİZLEME
+  const filtreleriTemizle = () => {
+    setAramaMetni('');
+    setFiltreDurum('Tümü');
+    setFiltreBaslangic('');
+    setFiltreBitis('');
+  };
+
+  // FİLTRELEME MANTIĞI
+  const filtrelenmisLoglar = loglar.filter((log) => {
+    // 1. Arama Metni (İsim veya PIN)
+    const aramaKucuk = aramaMetni.toLowerCase();
+    const isimEslesmesi = log.KullaniciAdi?.toLowerCase().includes(aramaKucuk);
+    const pinEslesmesi = log.KullanilanPIN?.includes(aramaMetni);
+    const aramaUygun = aramaMetni === '' || isimEslesmesi || pinEslesmesi;
+
+    // 2. Durum Filtresi
+    const durumUygun = filtreDurum === 'Tümü' || log.Durum === filtreDurum;
+
+    // 3. Tarih Filtreleri (YYYY-MM-DD HH:MM:SS formatından sadece tarihi alıyoruz)
+    const logTarihi = log.IslemZamani ? log.IslemZamani.split(' ')[0] : '';
+    const baslangicUygun = !filtreBaslangic || logTarihi >= filtreBaslangic;
+    const bitisUygun = !filtreBitis || logTarihi <= filtreBitis;
+
+    return aramaUygun && durumUygun && baslangicUygun && bitisUygun;
+  });
+
   // Duruma göre özel renkli etiketler (Badge) döndüren yardımcı fonksiyon
   const getDurumEtiketi = (durum) => {
     switch (durum) {
@@ -48,12 +81,76 @@ export default function Loglar() {
   };
 
   return (
-    <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-6">
+   <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-6">
       
       {/* BAŞLIK KISMI */}
       <div className="mb-6">
-        <h2 className="text-2xl font-bold text-gray-800">Sistem Log Kayıtları</h2>
+        <h2 className="text-2xl font-bold text-gray-800">Sistem Giriş Logları</h2>
         <p className="text-gray-500 text-sm mt-1">Kapı kilit mekanizmasına yapılan tüm erişim denemeleri anlık olarak buradan izlenebilir.</p>
+      </div>
+
+      {/* FİLTRELEME ÇUBUĞU */}
+      <div className="bg-gray-50 p-4 rounded-lg border border-gray-100 mb-6 flex flex-col md:flex-row gap-4 items-end">
+        
+        <div className="flex-1 w-full">
+          <label className="block text-xs font-semibold text-gray-500 uppercase tracking-wider mb-2">Arama</label>
+          <input 
+            type="text" 
+            placeholder="İsim veya PIN ara..." 
+            value={aramaMetni}
+            onChange={(e) => setAramaMetni(e.target.value)}
+            className="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 bg-white"
+          />
+        </div>
+
+        <div className="flex-1 w-full">
+          <label className="block text-xs font-semibold text-gray-500 uppercase tracking-wider mb-2">Duruma Göre</label>
+          <select 
+            value={filtreDurum}
+            onChange={(e) => setFiltreDurum(e.target.value)}
+            className="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 bg-white"
+          >
+            <option value="Tümü">Tümü (Filtresiz)</option>
+            <option value="Basarili Giris">Giriş Başarılı</option>
+            <option value="Hatali Sifre">Hatalı Şifre</option>
+            <option value="Yetkisiz Saat">Saat Dışı Deneme</option>
+          </select>
+        </div>
+
+        <div className="flex-1 w-full">
+          <label className="block text-xs font-semibold text-gray-500 uppercase tracking-wider mb-2">Tarihten İtibaren</label>
+          <input 
+            type="date" 
+            value={filtreBaslangic}
+            onChange={(e) => setFiltreBaslangic(e.target.value)}
+            className="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 bg-white"
+          />
+        </div>
+
+        <div className="flex-1 w-full">
+          <label className="block text-xs font-semibold text-gray-500 uppercase tracking-wider mb-2">Tarihine Kadar</label>
+          <input 
+            type="date" 
+            value={filtreBitis}
+            onChange={(e) => setFiltreBitis(e.target.value)}
+            className="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 bg-white"
+          />
+        </div>
+
+        <div className="w-full md:w-auto flex justify-end">
+          <button 
+            onClick={filtreleriTemizle}
+            className="px-4 py-2 bg-white border border-gray-300 text-gray-600 rounded-lg text-sm font-semibold hover:bg-gray-100 transition whitespace-nowrap"
+          >
+            Filtreleri Temizle
+          </button>
+        </div>
+      </div>
+
+      {/* SONUÇ SAYISI */}
+      <div className="flex justify-between items-center mb-4">
+        <h3 className="text-lg font-bold text-gray-800">Log Kayıtları</h3>
+        <span className="text-sm text-gray-500 font-medium">Listelenen: {filtrelenmisLoglar.length} kayıt</span>
       </div>
 
       {/* LOG TABLOSU */}
@@ -68,19 +165,19 @@ export default function Loglar() {
             </tr>
           </thead>
           <tbody>
-            {loglar.length === 0 ? (
+            {filtrelenmisLoglar.length === 0 ? (
               <tr>
                 <td colSpan="4" className="text-center py-12 text-gray-500">
                   <div className="flex flex-col items-center justify-center">
                     <svg xmlns="http://www.w3.org/2000/svg" className="h-10 w-10 text-gray-300 mb-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
                     </svg>
-                    <span>Henüz hiçbir giriş denemesi kaydedilmedi.</span>
+                    <span>{loglar.length === 0 ? "Henüz hiçbir giriş denemesi kaydedilmedi." : "Filtreleme kriterlerinize uyan log bulunamadı."}</span>
                   </div>
                 </td>
               </tr>
             ) : (
-              loglar.map((log) => (
+              filtrelenmisLoglar.map((log) => (
                 <tr key={log.id} className="border-b border-gray-50 hover:bg-gray-50/50 transition">
                   <td className="py-4 px-4 text-sm font-medium text-gray-500 whitespace-nowrap">
                     {log.IslemZamani}
