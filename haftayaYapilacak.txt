@@ -3,14 +3,15 @@
 + Log Kayıtlarına filtre eklenebilir
 istekler ve dashboard kısmı yapılacak
 Karanlık Tema eklenecek
-Bir kullanıcıya 1'den fazla şifre atanamaz validasyonu
++ Bir kullanıcıya 1'den fazla şifre atanamaz validasyonu
 Admin, web panelini kullanarak nextion ekrana bir mesaj yazdırabilir.( Ekran kilitlensin ve giriş yapılamasın ) 
 nextion ekranların arayüzlerine stil eklenecek
 Ufak tefek Admin panel css değişiklikleri
 Parçalar ürün haline getirilecek
 mobil yapılacak
-cascade işlemi = user silinince şifreleri de silinecek
-
++ cascade işlemi = user silinince şifreleri de silinecek
++ kullanıcı eski, geçmiş tarihli bir şifre ataması yapamasın validasyonu
++ kullanıcılar, log kayitlari ve şifreler için sadece ilk 5 kaydın getirmesinin sağlanması.(sonra request için de eklenecek)
 
 
 

@@ -9,6 +9,10 @@ export default function Sifreler() {
   // sıralam için state
   const [sortConfig, setSortConfig] = useState({ key: null, direction: 'asc' });
 
+  // SAYFALAMA STATE'LERİ
+  const [mevcutSayfa, setMevcutSayfa] = useState(1);
+  const kayitSayisi = 5; // Her sayfada kaç kayıt gösterilecek
+
 
   // Tarih ve saat karşılaştırması yapan yardımcı fonksiyon
   const durumHesapla = (baslangicStr, bitisStr) => {
@@ -72,6 +76,7 @@ export default function Sifreler() {
       direction = 'desc'; // Zaten artansa, azalana çevir
     }
     setSortConfig({ key, direction });
+    setMevcutSayfa(1);  // Sıralama değiştiğinde 1. sayfaya dön!
   };
 
   // Verileri sıralama konfigürasyonuna göre düzenliyoruz
@@ -95,6 +100,12 @@ export default function Sifreler() {
     }
     return 0;
   });
+
+  const sonKayitIndeksi = mevcutSayfa * kayitSayisi;
+  const ilkKayitIndeksi = sonKayitIndeksi - kayitSayisi;
+
+  const gosterilecekSifreler = siraliSifreler.slice(ilkKayitIndeksi, sonKayitIndeksi);
+  const toplamSayfa = Math.ceil(siraliSifreler.length / kayitSayisi);
 
   // Sıralama İkonunu Çizen Yardımcı Bileşen
   const SortIcon = ({ columnKey }) => {
@@ -176,7 +187,7 @@ export default function Sifreler() {
             {siraliSifreler.length === 0 ? (
               <tr><td colSpan="6" className="text-center py-8 text-gray-500">Sistemde kayıtlı şifre bulunmuyor.</td></tr>
             ) : (
-              siraliSifreler.map((sifre) => (
+              gosterilecekSifreler.map((sifre) => (
                 <tr key={sifre.pin} className="border-b hover:bg-gray-50">
                   <td className="py-4 px-2 font-mono font-bold text-indigo-600">{sifre.pin}</td>
                   <td className="py-4 px-2 font-medium text-gray-800">{sifre.KullaniciAdi}</td>
@@ -197,6 +208,58 @@ export default function Sifreler() {
             )}
           </tbody>
         </table>
+
+        {/* SAYFALAMA BUTONLARI */}
+        {toplamSayfa > 1 && (
+        <div className="flex items-center justify-between border-t border-gray-100 bg-white px-4 py-3 sm:px-6 mt-2 rounded-b-lg">
+          <div className="hidden sm:flex sm:flex-1 sm:items-center sm:justify-between">
+            <div>
+              <p className="text-sm text-gray-700">
+                Toplam <span className="font-medium">{siraliSifreler.length}</span> kayıttan{' '}
+                <span className="font-medium">{ilkKayitIndeksi + 1}</span> -{' '}
+                <span className="font-medium">{Math.min(sonKayitIndeksi, siraliSifreler.length)}</span> arası gösteriliyor.
+              </p>
+            </div>
+            <div>
+              <nav className="isolate inline-flex -space-x-px rounded-md shadow-sm" aria-label="Pagination">
+                <button
+                  onClick={() => setMevcutSayfa(prev => Math.max(prev - 1, 1))}
+                  disabled={mevcutSayfa === 1}
+                  className={`relative inline-flex items-center rounded-l-md px-2 py-2 text-gray-400 ring-1 ring-inset ring-gray-300 hover:bg-gray-50 focus:z-20 focus:outline-offset-0 ${mevcutSayfa === 1 ? 'opacity-50 cursor-not-allowed' : ''}`}
+                >
+                  <span className="sr-only">Önceki</span>
+                  <svg className="h-5 w-5" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
+                    <path fillRule="evenodd" d="M12.79 5.23a.75.75 0 01-.02 1.06L8.832 10l3.938 3.71a.75.75 0 11-1.04 1.08l-4.5-4.25a.75.75 0 010-1.08l4.5-4.25a.75.75 0 011.06.02z" clipRule="evenodd" />
+                  </svg>
+                </button>
+                
+                {/* Sayfa Numaraları */}
+                {[...Array(toplamSayfa)].map((_, index) => (
+                  <button
+                    key={index}
+                    onClick={() => setMevcutSayfa(index + 1)}
+                    className={`relative inline-flex items-center px-4 py-2 text-sm font-semibold focus:z-20 ${mevcutSayfa === index + 1 ? 'z-10 bg-indigo-600 text-white  focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600' : 'text-gray-900 ring-1 ring-inset ring-gray-300 hover:bg-gray-50 focus:outline-offset-0'}`}
+                  >
+                    {index + 1}
+                  </button>
+                ))}
+
+                <button
+                  onClick={() => setMevcutSayfa(prev => Math.min(prev + 1, toplamSayfa))}
+                  disabled={mevcutSayfa === toplamSayfa}
+                  className={`relative inline-flex items-center rounded-r-md px-2 py-2 text-gray-400 ring-1 ring-inset ring-gray-300 hover:bg-gray-50 focus:z-20 focus:outline-offset-0 ${mevcutSayfa === toplamSayfa ? 'opacity-50 cursor-not-allowed' : ''}`}
+                >
+                  <span className="sr-only">Sonraki</span>
+                  <svg className="h-5 w-5" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
+                    <path fillRule="evenodd" d="M7.21 14.77a.75.75 0 01.02-1.06L11.168 10 7.23 6.29a.75.75 0 111.04-1.08l4.5 4.25a.75.75 0 010 1.08l-4.5 4.25a.75.75 0 01-1.06-.02z" clipRule="evenodd" />
+                  </svg>
+                </button>
+              </nav>
+            </div>
+          </div>
+        </div>
+      )}
+
       </div>
     </div>
   );

@@ -25,6 +25,10 @@ export default function Kullanicilar() {
   // PIN atama modalı için ayrı mesaj state'i
   const [pinMesaj, setPinMesaj] = useState({ tip: '', metin: '' });
 
+  // SAYFALAMA STATE'LERİ
+  const [mevcutSayfa, setMevcutSayfa] = useState(1);
+  const kayitSayisi = 5; // Her sayfada kaç kayıt gösterilecek
+
 
   useEffect(() => {
     const kullanicilarRef = ref(db, 'KilitSistemi/Kullanicilar');
@@ -43,6 +47,12 @@ export default function Kullanicilar() {
            user.Email.toLowerCase().includes(aramaMetni.toLowerCase());
   });
 
+  const sonKayitIndeksi = mevcutSayfa * kayitSayisi;
+  const ilkKayitIndeksi = sonKayitIndeksi - kayitSayisi;
+  
+  const gosterilecekKullanicilar = filtrelenmisKullanicilar.slice(ilkKayitIndeksi, sonKayitIndeksi);
+  const toplamSayfa = Math.ceil(filtrelenmisKullanicilar.length / kayitSayisi);
+
   // --- YENİ KULLANICI EKLEME ---
   const handleKullaniciEkle = async (e) => {
     e.preventDefault();
@@ -58,15 +68,39 @@ export default function Kullanicilar() {
         setMesaj({ tip: 'hata', metin: 'Kullanıcı eklenemedi.' }); }
   };
 
-  // --- SİLME İŞLEMİ ---
+  // --- SİLME İŞLEMİ ( cascade -> kullanıcı ve ilişkili şifreler) ---
   const handleKullaniciSil = async (id) => {
-    if (window.confirm("Bu kullanıcıyı silmek istediğinize emin misiniz?")) {
+    if (window.confirm("Bu kullanıcıyı sildiğinizde ona tanımlı olan aktif şifreler de kalıcı olarak silinecektir. Onaylıyor musunuz?")) {
       try {
+        // 1. ADIM: Sifreler düğümünde bu kullanıcıya ait bir kayıt var mı tara
+        const sifrelerRef = ref(db, 'KilitSistemi/Sifreler');
+        const snapshot = await get(sifrelerRef);
+
+        if (snapshot.exists()) {
+          const mevcutSifreler = snapshot.val();
+          
+          // Silinecek kullanıcının ID'sine sahip olan PIN'i buluyoruz
+          const silinecekPin = Object.keys(mevcutSifreler).find(
+            (pin) => mevcutSifreler[pin].UserID === id
+          );
+
+          // Eğer kullanıcıya ait bir PIN bulunduysa, önce onu temizle
+          if (silinecekPin) {
+            await remove(ref(db, `KilitSistemi/Sifreler/${silinecekPin}`));
+            console.log(`Cascade: ${id} kullanıcısına ait ${silinecekPin} PIN'i silindi.`);
+          }
+        }
+
+        // 2. ADIM: Kullanıcının kendisini sil
         await remove(ref(db, `KilitSistemi/Kullanicilar/${id}`));
-        setAcikMenuId(null); // Menüyü kapat
+
+        setMesaj({ tip: 'basari', metin: 'Kullanıcı ve ilişkili tüm veriler başarıyla temizlendi.' });
+        setAcikMenuId(null); // 3 nokta menüsünü kapat
+        setTimeout(() => setMesaj({ tip: '', metin: '' }), 2000);
+
       } catch (error) { 
-        console.error("Kullanıcı silme hatası:", error);
-        alert("Silme hatası!");
+        console.error("Silme hatası:", error);
+        alert("Silme işlemi sırasında teknik bir sorun oluştu.");
       }
     }
   };
@@ -87,30 +121,80 @@ export default function Kullanicilar() {
   // --- PIN (ŞİFRE ATA) İŞLEMİ ---
   const handlePinAta = async (e) => {
     e.preventDefault();
+    
+    // Mesajı gösterip 1.5 saniye sonra otomatik temizleyen yardımcı fonksiyon
+    const pinMesajGosterVeSil = (tip, metin) => {
+      setPinMesaj({ tip, metin });
+      setTimeout(() => setPinMesaj({ tip: '', metin: '' }), 1500);
+    };
+    
+    // 1. FORMAT KONTROLLERİ
+    if (!/^\d{4}$/.test(pinForm.pin)) {
+      pinMesajGosterVeSil('hata', 'PIN kodu 4 haneli sayı olmalıdır.');
+      return;
+    }
+
+    const baslangicTarihi = new Date(pinForm.baslangic);
+    const bitisTarihi = new Date(pinForm.bitis);
+    const suAn = new Date();
+    
+    // Kullanıcı formu doldururken geçecek süreyi hesaba katarak 5 dakikalık bir tolerans tanıyoruz
+    const toleransliSuAn = new Date(suAn.getTime() - 5 * 60000);
+
+    if (baslangicTarihi < toleransliSuAn) {
+      pinMesajGosterVeSil('hata', 'Başlangıç tarihi geçmiş bir zaman olamaz.');
+      return;
+    }
+
+    if (baslangicTarihi >= bitisTarihi) {
+      pinMesajGosterVeSil('hata', 'Bitiş zamanı başlangıç zamanından sonra olmalıdır.');
+      return;
+    }
+
     try {
-        if (!/^\d{4}$/.test(pinForm.pin)) {
-          setPinMesaj({ tip: 'hata', metin: 'PIN kodu 4 haneli sayı olmalıdır.' });    
-          return;
+      // 2. VERİTABANI KONTROLLERİ (Firebase'den şifreler düğümünü çekiyoruz)
+      const sifrelerRef = ref(db, 'KilitSistemi/Sifreler');
+      const snapshot = await get(sifrelerRef);
+      
+      if (snapshot.exists()) {
+        const mevcutSifreler = snapshot.val();
+        
+        // A) Bu kullanıcının zaten bir şifresi var mı?
+        // Object.values ile tüm şifreleri diziye çevirip, UserID'leri kontrol ediyoruz.
+        const kullanicininSifresiVarMi = Object.values(mevcutSifreler).some(
+          (sifre) => sifre.UserID === seciliKullanici.id
+        );
+
+        if (kullanicininSifresiVarMi) {
+          pinMesajGosterVeSil('hata', 'Bu kullanıcının halihazırda atanmış bir şifresi bulunuyor! Önce onu iptal edin.');
+          return; // İşlemi iptal et
         }
 
-        if (new Date(pinForm.baslangic) >= new Date(pinForm.bitis)) {
-          setPinMesaj({ tip: 'hata', metin: 'Bitiş zamanı başlangıç zamanından sonra olmalıdır.' });
-          return;
-        }   
+        // B) Girilen PIN kodu başka birinde kullanılıyor mu?
+        if (mevcutSifreler[pinForm.pin]) {
+          pinMesajGosterVeSil('hata', 'Bu PIN kodu şu anda başka bir kullanıcıya aittir!');
+          return; // İşlemi iptal et
+        }
+      }
 
+      // 3. HER ŞEY UYGUNSA KAYIT İŞLEMİ
       await set(ref(db, `KilitSistemi/Sifreler/${pinForm.pin}`), {
         UserID: seciliKullanici.id,
         KullaniciAdi: seciliKullanici.Ad,
         Baslangic: pinForm.baslangic.replace("T", " "),
         Bitis: pinForm.bitis.replace("T", " ")
       });
+      
       setMesaj({ tip: 'basari', metin: 'PIN başarıyla atandı!' });
       setIsPinModalOpen(false);
       setPinForm({ pin: '', baslangic: '', bitis: '' }); // Formu temizle
+      setPinMesaj({ tip: '', metin: '' }); // Modal mesajını temizle
       setTimeout(() => setMesaj({ tip: '', metin: '' }), 2000);
+      
     } catch (error) { 
       console.error("PIN atama hatası:", error);
-      setMesaj({ tip: 'hata', metin: 'PIN atama hatası.' }); }
+      setPinMesaj({ tip: 'hata', metin: 'Sistemsel bir hata oluştu, PIN atanamadı.' }); 
+    }
   };
 
   return (
@@ -130,7 +214,7 @@ export default function Kullanicilar() {
               type="text" 
               placeholder="İsim veya e-posta ile ara..." 
               value={aramaMetni}
-              onChange={(e) => setAramaMetni(e.target.value)}
+              onChange={(e) => { setAramaMetni(e.target.value); setMevcutSayfa(1); }}
               className="w-full pl-10 pr-4 py-2 border border-gray-200 rounded-lg text-sm focus:ring-2 focus:ring-indigo-500 outline-none transition"
             />
             <svg className="w-5 h-5 absolute left-3 top-2.5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -173,7 +257,11 @@ export default function Kullanicilar() {
                 </td>
               </tr>
             ) : (
-              filtrelenmisKullanicilar.map(u => (
+              gosterilecekKullanicilar.map((u, index) => {
+
+                const isSonSatirlar = index >= gosterilecekKullanicilar.length - 2;
+
+              return (
                 <tr key={u.id} className="border-b hover:bg-gray-50 transition">
                   <td className="py-4 px-4 font-medium text-gray-800">{u.Ad}</td>
                   <td className="py-4 px-4 text-gray-600">{u.Email}</td>
@@ -186,7 +274,7 @@ export default function Kullanicilar() {
                     </button>
 
                     {acikMenuId === u.id && (
-                      <div className="absolute right-12 top-10 mt-1 w-40 bg-white border border-gray-100 rounded-lg shadow-xl z-10 py-1 overflow-hidden">
+                      <div className={`absolute right-12 w-40 bg-white border border-gray-100 rounded-lg shadow-2xl z-50 py-1 overflow-hidden ${isSonSatirlar ? 'bottom-10 mb-1' : 'top-10 mt-1'}`}>
                         <button onClick={() => { setSeciliKullanici(u); setIsPinModalOpen(true); setAcikMenuId(null); }} className="w-full text-left px-4 py-2 text-sm text-indigo-600 hover:bg-indigo-50 font-medium">PIN Ata</button>
                         <button onClick={() => { setSeciliKullanici(u); setEditForm({ Ad: u.Ad, Email: u.Email, Sifre: u.Sifre || '' }); setIsEditModalOpen(true); setAcikMenuId(null); }} className="w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-50">Düzenle</button>
                         <div className="border-t border-gray-100 my-1"></div>
@@ -195,10 +283,62 @@ export default function Kullanicilar() {
                     )}
                   </td>
                 </tr>
-              ))
+                )
+              })
             )}
           </tbody>
         </table>
+
+      {toplamSayfa > 1 && (
+        <div className="flex items-center justify-between border-t border-gray-100 bg-white px-4 py-3 sm:px-6 mt-2 rounded-b-lg">
+          <div className="hidden sm:flex sm:flex-1 sm:items-center sm:justify-between">
+            <div>
+              <p className="text-sm text-gray-700">
+                Toplam <span className="font-medium">{kullanicilar.length}</span> kayıttan{' '}
+                <span className="font-medium">{ilkKayitIndeksi + 1}</span> -{' '}
+                <span className="font-medium">{Math.min(sonKayitIndeksi, kullanicilar.length)}</span> arası gösteriliyor.
+              </p>
+            </div>
+            <div>
+              <nav className="isolate inline-flex -space-x-px rounded-md shadow-sm" aria-label="Pagination">
+                <button
+                  onClick={() => setMevcutSayfa(prev => Math.max(prev - 1, 1))}
+                  disabled={mevcutSayfa === 1}
+                  className={`relative inline-flex items-center rounded-l-md px-2 py-2 text-gray-400 ring-1 ring-inset ring-gray-300 hover:bg-gray-50 focus:z-20 focus:outline-offset-0 ${mevcutSayfa === 1 ? 'opacity-50 cursor-not-allowed' : ''}`}
+                >
+                  <span className="sr-only">Önceki</span>
+                  <svg className="h-5 w-5" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
+                    <path fillRule="evenodd" d="M12.79 5.23a.75.75 0 01-.02 1.06L8.832 10l3.938 3.71a.75.75 0 11-1.04 1.08l-4.5-4.25a.75.75 0 010-1.08l4.5-4.25a.75.75 0 011.06.02z" clipRule="evenodd" />
+                  </svg>
+                </button>
+                
+                {/* Sayfa Numaraları */}
+                {[...Array(toplamSayfa)].map((_, index) => (
+                  <button
+                    key={index}
+                    onClick={() => setMevcutSayfa(index + 1)}
+                    className={`relative inline-flex items-center px-4 py-2 text-sm font-semibold focus:z-20 ${mevcutSayfa === index + 1 ? 'z-10 bg-indigo-600 text-white  focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600' : 'text-gray-900 ring-1 ring-inset ring-gray-300 hover:bg-gray-50 focus:outline-offset-0'}`}
+                  >
+                    {index + 1}
+                  </button>
+                ))}
+
+                <button
+                  onClick={() => setMevcutSayfa(prev => Math.min(prev + 1, toplamSayfa))}
+                  disabled={mevcutSayfa === toplamSayfa}
+                  className={`relative inline-flex items-center rounded-r-md px-2 py-2 text-gray-400 ring-1 ring-inset ring-gray-300 hover:bg-gray-50 focus:z-20 focus:outline-offset-0 ${mevcutSayfa === toplamSayfa ? 'opacity-50 cursor-not-allowed' : ''}`}
+                >
+                  <span className="sr-only">Sonraki</span>
+                  <svg className="h-5 w-5" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
+                    <path fillRule="evenodd" d="M7.21 14.77a.75.75 0 01.02-1.06L11.168 10 7.23 6.29a.75.75 0 111.04-1.08l4.5 4.25a.75.75 0 010 1.08l-4.5 4.25a.75.75 0 01-1.06-.02z" clipRule="evenodd" />
+                  </svg>
+                </button>
+              </nav>
+            </div>
+          </div>
+        </div>
+      )}
+
       </div>
 
       {/* YENİ KULLANICI EKLE MODALI */}
@@ -252,7 +392,7 @@ export default function Kullanicilar() {
               <input type="datetime-local" required onChange={e => setPinForm({...pinForm, baslangic: e.target.value})} className="w-full p-2 border rounded-lg focus:ring-2 focus:ring-indigo-500 outline-none" />
               <input type="datetime-local" required onChange={e => setPinForm({...pinForm, bitis: e.target.value})} className="w-full p-2 border rounded-lg focus:ring-2 focus:ring-indigo-500 outline-none" />
               <div className="flex gap-2 pt-2">
-                <button type="button" onClick={() => setIsPinModalOpen(false)} className="flex-1 bg-gray-100 text-gray-700 font-medium py-2 rounded-lg hover:bg-gray-200">İptal</button>
+                <button type="button" onClick={() => { setIsPinModalOpen(false); setPinMesaj({ tip: '', metin: '' }); }} className="flex-1 bg-gray-100 text-gray-700 font-medium py-2 rounded-lg hover:bg-gray-200">İptal</button>
                 <button type="submit" className="flex-1 bg-indigo-600 text-white font-medium py-2 rounded-lg hover:bg-indigo-700">PIN Kaydet</button>
               </div>
             </form>
