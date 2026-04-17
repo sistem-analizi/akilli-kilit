@@ -152,32 +152,39 @@ export default function Kullanicilar() {
     }
 
     try {
-      // 2. VERİTABANI KONTROLLERİ (Firebase'den şifreler düğümünü çekiyoruz)
+     // 2. VERİTABANI KONTROLLERİ
       const sifrelerRef = ref(db, 'KilitSistemi/Sifreler');
       const snapshot = await get(sifrelerRef);
       
       if (snapshot.exists()) {
         const mevcutSifreler = snapshot.val();
-        
-        // A) Bu kullanıcının zaten bir şifresi var mı?
-        // Object.values ile tüm şifreleri diziye çevirip, UserID'leri kontrol ediyoruz.
-        const kullanicininSifresiVarMi = Object.values(mevcutSifreler).some(
-          (sifre) => sifre.UserID === seciliKullanici.id
-        );
+        const suAn = new Date();
 
-        if (kullanicininSifresiVarMi) {
-          pinMesajGosterVeSil('hata', 'Bu kullanıcının halihazırda atanmış bir şifresi bulunuyor! Önce onu iptal edin.');
-          return; // İşlemi iptal et
+        // A) Bu kullanıcının GEÇERLİ/AKTİF bir şifresi var mı? (Süresi dolmuş şifreler sayılmaz)
+        const kullanicininAktifSifresiVarMi = Object.values(mevcutSifreler).some((sifre) => {
+          const bitisTarihi = new Date(sifre.Bitis.replace(" ", "T"));
+          return sifre.UserID === seciliKullanici.id && bitisTarihi > suAn;
+        });
+
+        if (kullanicininAktifSifresiVarMi) {
+          pinMesajGosterVeSil('hata', 'Bu kullanıcının halihazırda geçerli bir şifresi var! Önce onu iptal edin.');
+          return;
         }
 
-        // B) Girilen PIN kodu başka birinde kullanılıyor mu?
+        // B) Girilen PIN başkası tarafından AKTİF olarak kullanılıyor mu?
         if (mevcutSifreler[pinForm.pin]) {
-          pinMesajGosterVeSil('hata', 'Bu PIN kodu şu anda başka bir kullanıcıya aittir!');
-          return; // İşlemi iptal et
+          const eskiSifreBitis = new Date(mevcutSifreler[pinForm.pin].Bitis.replace(" ", "T"));
+          
+          // Eğer PIN var ama Bitiş tarihi hala gelecekteyse (Süresi Dolmamışsa) işlemi engelle
+          if (eskiSifreBitis > suAn) {
+            pinMesajGosterVeSil('hata', 'Bu PIN kodu şu anda başka bir kullanıcıda aktif!');
+            return;
+          }
+          // Eğer Bitiş tarihi eskiyse, kod aşağıya inip eski PIN'in üzerine yazacak!
         }
       }
 
-      // 3. HER ŞEY UYGUNSA KAYIT İŞLEMİ
+      // 3. HER ŞEY UYGUNSA KAYIT İŞLEMİ (Tarihi geçmiş PIN varsa üzerine yazar)
       await set(ref(db, `KilitSistemi/Sifreler/${pinForm.pin}`), {
         UserID: seciliKullanici.id,
         KullaniciAdi: seciliKullanici.Ad,
@@ -258,8 +265,9 @@ export default function Kullanicilar() {
               </tr>
             ) : (
               gosterilecekKullanicilar.map((u, index) => {
-
-                const isSonSatirlar = index >= gosterilecekKullanicilar.length - 2;
+                
+                // son satırlarda açılan menünün ekran dışına taşmaması için kontrol
+                const isSonSatirlar = gosterilecekKullanicilar.length > 2 && index >= gosterilecekKullanicilar.length - 2;
 
               return (
                 <tr key={u.id} className="border-b hover:bg-gray-50 transition">

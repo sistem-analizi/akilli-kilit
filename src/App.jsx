@@ -39,7 +39,7 @@ function App() {
 
         {/* Sağ Taraf (Değişen Sayfa İçeriği) */}
         <div className="flex-1 overflow-y-auto">
-          <header className="bg-white shadow-sm px-8 py-4">
+          <header className="bg-white shadow-sm px-8 py-4 items-center flex justify-center">
             <h1 className="text-xl font-semibold text-gray-800">Hoş Geldin, Admin</h1>
           </header>
           

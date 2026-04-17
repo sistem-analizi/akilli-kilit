@@ -1,7 +1,7 @@
 + Şifreler kısmına filtre ekle
 + Kullanıcı kısmına kullanıcaya göre arama eklersin
 + Log Kayıtlarına filtre eklenebilir
-istekler ve dashboard kısmı yapılacak
++ istekler ve dashboard kısmı yapılacak
 Karanlık Tema eklenecek
 + Bir kullanıcıya 1'den fazla şifre atanamaz validasyonu
 Admin, web panelini kullanarak nextion ekrana bir mesaj yazdırabilir.( Ekran kilitlensin ve giriş yapılamasın ) 
@@ -12,7 +12,8 @@ mobil yapılacak
 + cascade işlemi = user silinince şifreleri de silinecek
 + kullanıcı eski, geçmiş tarihli bir şifre ataması yapamasın validasyonu
 + kullanıcılar, log kayitlari ve şifreler için sadece ilk 5 kaydın getirmesinin sağlanması.(sonra request için de eklenecek)
-
++ kullanıcılar tablosunda 3 nokta menüsü tek kayıt problemi. 
++ şifrelerin vakti geçince otomatik silinmesi -> süresi geçenler şifre atamasında dikkate alınmıyor artık.
 
 
 
