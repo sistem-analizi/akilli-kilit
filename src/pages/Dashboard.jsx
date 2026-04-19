@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { ref, onValue } from 'firebase/database';
+import { ref, onValue, update } from 'firebase/database';
 import { db } from '../firebase';
 
 export default function Dashboard() {
@@ -12,8 +12,12 @@ export default function Dashboard() {
     bugunkuHatalar: 0
   });
 
-  // SON HAREKETLER (LOGLAR) İÇİN STATE
   const [sonLoglar, setSonLoglar] = useState([]);
+  
+  // CİHAZ KONTROL STATE'LERİ (Yeni Eklendi)
+  const [cihazDurumu, setCihazDurumu] = useState({ kilitli: false, mesaj: '' });
+  const [ekranMesaji, setEkranMesaji] = useState('');
+  const [islemMesaji, setIslemMesaji] = useState({ tip: '', metin: '' });
 
   useEffect(() => {
     const kilitSistemiRef = ref(db, 'KilitSistemi');
@@ -23,57 +27,58 @@ export default function Dashboard() {
       if (!data) return;
 
       const suAn = new Date();
-      const bugunStr = suAn.toISOString().split('T')[0]; // "2026-04-18" formatı
+      const bugunStr = suAn.toISOString().split('T')[0];
 
       let aktifSifreSayisi = 0;
       let bekleyenIstekSayisi = 0;
       let bugunkuGirisSayisi = 0;
       let bugunkuHataSayisi = 0;
 
-      // 1. KULLANICILAR HESAPLAMASI
+      // 1. İstatistik Hesaplamaları
       const toplamKullaniciSayisi = data.Kullanicilar ? Object.keys(data.Kullanicilar).length : 0;
 
-      // 2. AKTİF ŞİFRE HESAPLAMASI
       if (data.Sifreler) {
         Object.values(data.Sifreler).forEach(sifre => {
           const baslangic = new Date(sifre.Baslangic.replace(" ", "T"));
           const bitis = new Date(sifre.Bitis.replace(" ", "T"));
-          if (suAn >= baslangic && suAn <= bitis) {
-            aktifSifreSayisi++;
-          }
+          if (suAn >= baslangic && suAn <= bitis) aktifSifreSayisi++;
         });
       }
 
-      // 3. BEKLEYEN İSTEKLER HESAPLAMASI yapılıyor 
       if (data.Istekler) {
         Object.values(data.Istekler).forEach(istek => {
-          if (istek.Durum === 'Bekliyor') {
-            bekleyenIstekSayisi++;
-          }
+          if (istek.Durum === 'Bekliyor') bekleyenIstekSayisi++;
         });
       }
 
-      // 4. LOGLAR VE SON HAREKETLER HESAPLAMASI
       let logListesi = [];
       if (data.GirisLoglari) {
         Object.keys(data.GirisLoglari).forEach(key => {
           const log = data.GirisLoglari[key];
           logListesi.push({ id: key, ...log });
-
-          // Bugünün verilerini say
           const logTarihi = log.IslemZamani.split(' ')[0];
           if (logTarihi === bugunStr) {
             if (log.Durum === 'Basarili Giris') bugunkuGirisSayisi++;
             if (log.Durum === 'Hatali Sifre' || log.Durum === 'Yetkisiz Saat') bugunkuHataSayisi++;
           }
         });
-
-        // Logları en yeniden eskiye sırala ve sadece son 5 tanesini al
         logListesi.sort((a, b) => (a.IslemZamani > b.IslemZamani ? -1 : 1));
         logListesi = logListesi.slice(0, 5);
       }
 
-      // State'leri güncelle
+      // 2. Cihaz (Ekran) Durumunu Çekme (Yeni Eklendi)
+      if (data.CihazDurumu) {
+        setCihazDurumu({
+          kilitli: data.CihazDurumu.Kilitli || false,
+          mesaj: data.CihazDurumu.Mesaj || ''
+        });
+        // Eğer cihaz kilitliyse ve input boşsa, veritabanındaki mesajı inputa doldur
+        if (data.CihazDurumu.Kilitli && !ekranMesaji) {
+          setEkranMesaji(data.CihazDurumu.Mesaj);
+        }
+      }
+
+      // State Güncellemeleri
       setIstatistikler({
         toplamKullanici: toplamKullaniciSayisi,
         aktifSifreler: aktifSifreSayisi,
@@ -85,32 +90,53 @@ export default function Dashboard() {
     });
   }, []);
 
+  // CİHAZ KİLİTLEME/AÇMA FONKSİYONU (Yeni Eklendi)
+  const handleCihazKilitle = async (kilitDurumu) => {
+    try {
+      if (kilitDurumu && !ekranMesaji.trim()) {
+        setIslemMesaji({ tip: 'hata', metin: 'Lütfen ekranda görünecek bir uyarı mesajı yazın!' });
+        setTimeout(() => setIslemMesaji({ tip: '', metin: '' }), 3000);
+        return;
+      }
+
+      const gidenMesaj = kilitDurumu ? ekranMesaji : 'Sistem Aktif'; // Kilidi açınca varsayılan mesaja dön
+      
+      await update(ref(db, 'KilitSistemi/CihazDurumu'), {
+        Kilitli: kilitDurumu,
+        Mesaj: gidenMesaj
+      });
+
+      if (!kilitDurumu) setEkranMesaji(''); // Kilidi açınca inputu temizle
+
+      setIslemMesaji({ 
+        tip: 'basari', 
+        metin: kilitDurumu ? 'Sistem kilitlendi ve mesaj ekrana gönderildi.' : 'Sistem kilidi açıldı, normale dönüldü.' 
+      });
+      setTimeout(() => setIslemMesaji({ tip: '', metin: '' }), 3000);
+
+    } catch (error) {
+      console.error("Cihaz kontrol hatası:", error);
+      setIslemMesaji({ tip: 'hata', metin: 'Cihaza bağlanılamadı!' });
+    }
+  };
+
   return (
     <div className="space-y-6">
       
-      {/* KARŞILAMA VE BAŞLIK */}
       <div>
         <h2 className="text-2xl font-bold text-gray-800">Sistem Özeti</h2>
         <p className="text-gray-500 text-sm mt-1">Akıllı Kapı Kilit Sisteminin anlık durum raporu.</p>
       </div>
 
-      {/* İSTATİSTİK KARTLARI GRİDİ */}
+      {/* İSTATİSTİK KARTLARI */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-        
-        {/* Kart 1: Aktif Şifreler */}
         <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-6 flex items-center gap-4">
           <div className="p-4 bg-indigo-50 text-indigo-600 rounded-lg">
-            <svg className="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15 7a2 2 0 012 2m4 0a6 6 0 01-7.743 5.743L11 17H9v2H7v2H4a1 1 0 01-1-1v-2.586a1 1 0 01.293-.707l5.964-5.964A6 6 0 1121 9z"></path>
-            </svg>
+            <svg className="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15 7a2 2 0 012 2m4 0a6 6 0 01-7.743 5.743L11 17H9v2H7v2H4a1 1 0 01-1-1v-2.586a1 1 0 01.293-.707l5.964-5.964A6 6 0 1121 9z"></path></svg>
           </div>
-          <div>
-            <p className="text-sm font-medium text-gray-500">Şu Anki Aktif Şifreler</p>
-            <p className="text-2xl font-bold text-gray-800">{istatistikler.aktifSifreler}</p>
-          </div>
+          <div><p className="text-sm font-medium text-gray-500">Aktif Şifreler</p><p className="text-2xl font-bold text-gray-800">{istatistikler.aktifSifreler}</p></div>
         </div>
 
-        {/* Kart 2: Bekleyen İstekler */}
         <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-6 flex items-center gap-4">
           <div className="p-4 bg-yellow-50 text-yellow-600 rounded-lg relative">
             {istatistikler.bekleyenIstekler > 0 && (
@@ -119,54 +145,35 @@ export default function Dashboard() {
                 <span className="relative inline-flex rounded-full h-3 w-3 bg-yellow-500"></span>
               </span>
             )}
-            <svg className="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9"></path>
-            </svg>
+            <svg className="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9"></path></svg>
           </div>
-          <div>
-            <p className="text-sm font-medium text-gray-500">Bekleyen İstekler</p>
-            <p className="text-2xl font-bold text-gray-800">{istatistikler.bekleyenIstekler}</p>
-          </div>
+          <div><p className="text-sm font-medium text-gray-500">Bekleyen İstekler</p><p className="text-2xl font-bold text-gray-800">{istatistikler.bekleyenIstekler}</p></div>
         </div>
 
-        {/* Kart 3: Bugünkü Başarılı Girişler */}
         <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-6 flex items-center gap-4">
           <div className="p-4 bg-green-50 text-green-600 rounded-lg">
-            <svg className="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
-            </svg>
+            <svg className="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
           </div>
-          <div>
-            <p className="text-sm font-medium text-gray-500">Bugün Başarılı Giriş</p>
-            <p className="text-2xl font-bold text-gray-800">{istatistikler.bugunkuGirisler}</p>
-          </div>
+          <div><p className="text-sm font-medium text-gray-500">Bugün Girişler</p><p className="text-2xl font-bold text-gray-800">{istatistikler.bugunkuGirisler}</p></div>
         </div>
 
-        {/* Kart 4: Bugünkü Hatalı Denemeler */}
         <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-6 flex items-center gap-4">
           <div className="p-4 bg-red-50 text-red-600 rounded-lg">
-            <svg className="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"></path>
-            </svg>
+            <svg className="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"></path></svg>
           </div>
-          <div>
-            <p className="text-sm font-medium text-gray-500">Bugün Hatalı Deneme</p>
-            <p className="text-2xl font-bold text-gray-800">{istatistikler.bugunkuHatalar}</p>
-          </div>
+          <div><p className="text-sm font-medium text-gray-500">Bugün Hatalı</p><p className="text-2xl font-bold text-gray-800">{istatistikler.bugunkuHatalar}</p></div>
         </div>
-
       </div>
 
-      {/* İKİNCİ SATIR: Son Loglar ve Sistem Bilgisi */}
+      {/* İKİNCİ SATIR: Cihaz Kontrolü ve Son Loglar */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         
-        {/* SON HAREKETLER TABLOSU */}
+        {/* LOGLAR TABLOSU */}
         <div className="lg:col-span-2 bg-white rounded-xl shadow-sm border border-gray-100 p-6">
           <div className="flex justify-between items-center mb-4">
             <h3 className="text-lg font-bold text-gray-800">Son Sistem Hareketleri</h3>
             <span className="text-xs text-gray-400">Canlı Akış</span>
           </div>
-          
           <div className="overflow-x-auto">
             <table className="w-full text-left">
               <thead>
@@ -178,9 +185,7 @@ export default function Dashboard() {
               </thead>
               <tbody>
                 {sonLoglar.length === 0 ? (
-                  <tr>
-                    <td colSpan="3" className="text-center py-8 text-gray-400 text-sm">Henüz sistem hareketi yok.</td>
-                  </tr>
+                  <tr><td colSpan="3" className="text-center py-8 text-gray-400 text-sm">Henüz sistem hareketi yok.</td></tr>
                 ) : (
                   sonLoglar.map(log => (
                     <tr key={log.id} className="border-b border-gray-50 hover:bg-gray-50 transition">
@@ -202,22 +207,61 @@ export default function Dashboard() {
           </div>
         </div>
 
-        {/* SİSTEM KISA BİLGİ KARTI */}
-        <div className="bg-linear-to-br from-indigo-600 to-indigo-800 rounded-xl shadow-sm p-6 text-white flex flex-col justify-between">
-          <div>
-            <h3 className="text-lg font-bold mb-2 text-indigo-100">Kullanıcı Kapasitesi</h3>
-            <p className="text-sm text-indigo-200 mb-6">Sisteme kayıtlı toplam kullanıcı ve yetki durumu özetiniz.</p>
-            <div className="text-5xl font-extrabold tracking-tight mb-2">
-              {istatistikler.toplamKullanici} <span className="text-lg font-medium text-indigo-300">Kişi</span>
-            </div>
-            <p className="text-sm text-indigo-200">Veritabanına kayıtlı personel/öğrenci sayısı.</p>
+        {/* YENİ MODÜL: SİSTEM & EKRAN KONTROLÜ */}
+        <div className={`rounded-xl shadow-sm p-6 border transition duration-300 ${cihazDurumu.kilitli ? 'bg-red-50 border-red-200' : 'bg-white border-gray-100'}`}>
+          <div className="flex items-center justify-between mb-4">
+            <h3 className={`text-lg font-bold ${cihazDurumu.kilitli ? 'text-red-800' : 'text-gray-800'}`}>Cihaz Kontrolü</h3>
+            {cihazDurumu.kilitli ? (
+              <span className="flex items-center text-xs font-bold text-red-600 bg-red-100 px-2 py-1 rounded-full animate-pulse">
+                <span className="w-2 h-2 bg-red-600 rounded-full mr-1"></span> KİLİTLİ
+              </span>
+            ) : (
+              <span className="flex items-center text-xs font-bold text-green-600 bg-green-100 px-2 py-1 rounded-full">
+                <span className="w-2 h-2 bg-green-600 rounded-full mr-1"></span> AKTİF
+              </span>
+            )}
           </div>
           
-          <div className="mt-8 pt-6 border-t border-indigo-500/30">
-            <div className="flex items-center text-sm text-indigo-200">
-              <svg className="w-5 h-5 mr-2 text-green-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M13 10V3L4 14h7v7l9-11h-7z"></path></svg>
-              Sistem şu anda aktif ve dinlemede
+          <p className="text-sm text-gray-600 mb-6">
+            Acil durumlarda veya sınavlarda kapıyı tamamen kilitleyebilir ve Nextion ekrana mesaj gönderebilirsiniz.
+          </p>
+
+          {islemMesaji.metin && (
+            <div className={`p-3 mb-4 rounded-lg text-xs font-semibold ${islemMesaji.tip === 'basari' ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700'}`}>
+              {islemMesaji.metin}
             </div>
+          )}
+
+          <div className="space-y-4">
+            <div>
+              <label className="block text-xs font-semibold text-gray-500 uppercase mb-2">Nextion Ekran Mesajı</label>
+              <textarea 
+                rows="2"
+                placeholder="Örn: Sınav Var, Lütfen Girmeyiniz!"
+                value={ekranMesaji}
+                onChange={(e) => setEkranMesaji(e.target.value)}
+                disabled={cihazDurumu.kilitli} // Kilitliyken mesaj değiştirilemesin
+                className={`w-full px-3 py-2 border rounded-lg text-sm focus:outline-none focus:ring-2 ${cihazDurumu.kilitli ? 'bg-gray-100 text-gray-500 border-gray-200 cursor-not-allowed' : 'bg-white border-gray-200 focus:ring-indigo-500'}`}
+              />
+            </div>
+
+            {cihazDurumu.kilitli ? (
+              <button 
+                onClick={() => handleCihazKilitle(false)}
+                className="w-full bg-gray-800 hover:bg-gray-900 text-white font-medium py-2.5 rounded-lg transition shadow-md flex justify-center items-center gap-2"
+              >
+                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M8 11V7a4 4 0 118 0m-4 8v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2z"></path></svg>
+                Kilidi Aç ve Normale Dön
+              </button>
+            ) : (
+              <button 
+                onClick={() => handleCihazKilitle(true)}
+                className="w-full bg-red-600 hover:bg-red-700 text-white font-medium py-2.5 rounded-lg transition shadow-md shadow-red-500/30 flex justify-center items-center gap-2"
+              >
+                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2z"></path></svg>
+                Sistemi Kilitle & Mesajı Gönder
+              </button>
+            )}
           </div>
         </div>
 
