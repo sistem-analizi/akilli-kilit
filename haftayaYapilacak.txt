@@ -17,7 +17,10 @@ mobil yapılacak
 
 
 
-
+şifreler kısmına loglarda ki gibi filtre
+gelen istekler kısmında admin onayladıktan sonra saati vesaire değiştirmek isterse değiştirebilir
+web ile nextion'a mesaj yazdırıp keypad'i kilitleme kısmına saat aralığı girilebilir. Yani 8'den ekranın kilidi açılacak, cihaz durumundaki kilit otomatik false olur
+buzzer ses kıs.
 
 
 
