@@ -154,47 +154,47 @@ export default function Sifreler() {
   };
 
   return (
-    <div>
+    <div className="transition-colors duration-300">
       <div className="mb-8">
-        <h2 className="text-2xl font-bold text-gray-800">Atanan Şifreler</h2>
-        <p className="text-gray-500 text-sm mt-1">Sisteme atanmış PIN kodlarının güncel durumları.</p>
+        <h2 className="text-2xl font-bold text-gray-800 dark:text-white transition-colors">Atanan Şifreler</h2>
+        <p className="text-gray-500 dark:text-gray-400 text-sm mt-1 transition-colors">Sisteme atanmış PIN kodlarının güncel durumları.</p>
       </div>
 
       {/* İSTATİSTİK KARTLARI */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
-        <div className="bg-white rounded-xl shadow-sm p-6 border border-gray-100">
-          <div className="text-gray-500 text-sm font-medium mb-1">Toplam Atanan Şifre</div>
-          <div className="text-3xl font-bold text-gray-800">{istatistik.toplam}</div>
+        <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm p-6 border border-gray-100 dark:border-gray-700 transition-colors">
+          <div className="text-gray-500 dark:text-gray-400 text-sm font-medium mb-1">Toplam Atanan Şifre</div>
+          <div className="text-3xl font-bold text-gray-800 dark:text-white">{istatistik.toplam}</div>
         </div>
-        <div className="bg-white rounded-xl shadow-sm p-6 border border-gray-100 border-l-4 border-l-green-500">
-          <div className="text-gray-500 text-sm font-medium mb-1">Şu An Giriş Yapabilenler</div>
-          <div className="text-3xl font-bold text-green-600">{istatistik.aktif}</div>
+        <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm p-6 border border-gray-100 dark:border-gray-700 border-l-4 border-l-green-500 dark:border-l-green-600 transition-colors">
+          <div className="text-gray-500 dark:text-gray-400 text-sm font-medium mb-1">Şu An Giriş Yapabilenler</div>
+          <div className="text-3xl font-bold text-green-600 dark:text-green-500">{istatistik.aktif}</div>
         </div>
-        <div className="bg-white rounded-xl shadow-sm p-6 border border-gray-100 border-l-4 border-l-yellow-500">
-          <div className="text-gray-500 text-sm font-medium mb-1">Saati Bekleyen Şifreler</div>
-          <div className="text-3xl font-bold text-yellow-600">{istatistik.bekleyen}</div>
+        <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm p-6 border border-gray-100 dark:border-gray-700 border-l-4 border-l-yellow-500 dark:border-l-yellow-600 transition-colors">
+          <div className="text-gray-500 dark:text-gray-400 text-sm font-medium mb-1">Saati Bekleyen Şifreler</div>
+          <div className="text-3xl font-bold text-yellow-600 dark:text-yellow-500">{istatistik.bekleyen}</div>
         </div>  
       </div>
 
-      {/* FİLTRELEME ÇUBUĞU (Yeni Eklendi) */}
-      <div className="bg-white p-4 rounded-xl shadow-sm border border-gray-100 mb-6 flex flex-col md:flex-row gap-4 items-end">
+      {/* FİLTRELEME ÇUBUĞU */}
+      <div className="bg-white dark:bg-gray-800 p-4 rounded-xl shadow-sm border border-gray-100 dark:border-gray-700 mb-6 flex flex-col md:flex-row gap-4 items-end transition-colors">
         <div className="flex-1 w-full">
-          <label className="block text-xs font-semibold text-gray-500 uppercase tracking-wider mb-2">Arama</label>
+          <label className="block text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider mb-2">Arama</label>
           <input 
             type="text" 
             placeholder="İsim veya PIN ara..." 
             value={aramaMetni}
             onChange={(e) => { setAramaMetni(e.target.value); setMevcutSayfa(1); }}
-            className="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 bg-gray-50"
+            className="w-full px-3 py-2 border border-gray-200 dark:border-gray-600 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 bg-gray-50 dark:bg-gray-700 text-gray-800 dark:text-white transition-colors"
           />
         </div>
 
         <div className="flex-1 w-full">
-          <label className="block text-xs font-semibold text-gray-500 uppercase tracking-wider mb-2">Duruma Göre</label>
+          <label className="block text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider mb-2">Duruma Göre</label>
           <select 
             value={filtreDurum}
             onChange={(e) => { setFiltreDurum(e.target.value); setMevcutSayfa(1); }}
-            className="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 bg-gray-50"
+            className="w-full px-3 py-2 border border-gray-200 dark:border-gray-600 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 bg-gray-50 dark:bg-gray-700 text-gray-800 dark:text-white transition-colors"
           >
             <option value="Tümü">Tümü (Filtresiz)</option>
             <option value="Şu An Aktif">Şu An Aktif</option>
@@ -204,29 +204,29 @@ export default function Sifreler() {
         </div>
 
         <div className="flex-1 w-full">
-          <label className="block text-xs font-semibold text-gray-500 uppercase tracking-wider mb-2">Başlangıç Tarihi (İtibaren)</label>
+          <label className="block text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider mb-2">Başlangıç Tarihi (İtibaren)</label>
           <input 
             type="date" 
             value={filtreBaslangic}
             onChange={(e) => { setFiltreBaslangic(e.target.value); setMevcutSayfa(1); }}
-            className="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 bg-gray-50"
+            className="w-full px-3 py-2 border border-gray-200 dark:border-gray-600 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 bg-gray-50 dark:bg-gray-700 text-gray-800 dark:text-white transition-colors"
           />
         </div>
 
         <div className="flex-1 w-full">
-          <label className="block text-xs font-semibold text-gray-500 uppercase tracking-wider mb-2">Başlangıç Tarihi (Kadar)</label>
+          <label className="block text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider mb-2">Başlangıç Tarihi (Kadar)</label>
           <input 
             type="date" 
             value={filtreBitis}
             onChange={(e) => { setFiltreBitis(e.target.value); setMevcutSayfa(1); }}
-            className="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 bg-gray-50"
+            className="w-full px-3 py-2 border border-gray-200 dark:border-gray-600 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 bg-gray-50 dark:bg-gray-700 text-gray-800 dark:text-white transition-colors"
           />
         </div>
 
         <div className="w-full md:w-auto flex justify-end">
           <button 
             onClick={filtreleriTemizle}
-            className="px-4 py-2 bg-white border border-gray-300 text-gray-600 rounded-lg text-sm font-semibold hover:bg-gray-100 transition whitespace-nowrap"
+            className="px-4 py-2 bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 text-gray-600 dark:text-gray-200 rounded-lg text-sm font-semibold hover:bg-gray-100 dark:hover:bg-gray-600 transition whitespace-nowrap"
           >
             Filtreleri Temizle
           </button>
@@ -234,28 +234,28 @@ export default function Sifreler() {
       </div>
 
       {/* TABLO */}
-      <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-6 overflow-x-auto">
+      <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-100 dark:border-gray-700 p-6 overflow-x-auto transition-colors">
         <div className="flex justify-between items-center mb-4">
-          <h3 className="text-lg font-bold text-gray-800">Tüm PIN Kodları</h3>
-          <span className="text-sm text-gray-500 font-medium">Listelenen: {filtrelenmisSifreler.length} kayıt</span>
+          <h3 className="text-lg font-bold text-gray-800 dark:text-white">Tüm PIN Kodları</h3>
+          <span className="text-sm text-gray-500 dark:text-gray-400 font-medium">Listelenen: {filtrelenmisSifreler.length} kayıt</span>
         </div>
         
         <table className="w-full text-left border-collapse">
           <thead>
-            <tr className="border-b bg-gray-50 text-gray-600 text-sm">
-              <th className="py-3 px-4 rounded-tl-lg cursor-pointer hover:bg-gray-100 transition select-none" onClick={() => handleSort('pin')}>
+            <tr className="border-b border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-800/80 text-gray-600 dark:text-gray-400 text-sm transition-colors">
+              <th className="py-3 px-4 rounded-tl-lg cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-700 transition select-none" onClick={() => handleSort('pin')}>
                 <div className="flex items-center gap-2">PIN Kodu <SortIcon columnKey="pin" /></div>
               </th>
-              <th className="py-3 px-4 cursor-pointer hover:bg-gray-100 transition select-none" onClick={() => handleSort('KullaniciAdi')}>
+              <th className="py-3 px-4 cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-700 transition select-none" onClick={() => handleSort('KullaniciAdi')}>
                 <div className="flex items-center gap-2">Kullanıcı <SortIcon columnKey="KullaniciAdi" /></div>
               </th>
-              <th className="py-3 px-4 cursor-pointer hover:bg-gray-100 transition select-none" onClick={() => handleSort('Baslangic')}>
+              <th className="py-3 px-4 cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-700 transition select-none" onClick={() => handleSort('Baslangic')}>
                 <div className="flex items-center gap-2">Başlangıç <SortIcon columnKey="Baslangic" /></div>
               </th>
-              <th className="py-3 px-4 cursor-pointer hover:bg-gray-100 transition select-none" onClick={() => handleSort('Bitis')}>
+              <th className="py-3 px-4 cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-700 transition select-none" onClick={() => handleSort('Bitis')}>
                 <div className="flex items-center gap-2">Bitiş <SortIcon columnKey="Bitis" /></div>
               </th>
-              <th className="py-3 px-4 cursor-pointer hover:bg-gray-100 transition select-none" onClick={() => handleSort('durum')}>
+              <th className="py-3 px-4 cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-700 transition select-none" onClick={() => handleSort('durum')}>
                 <div className="flex items-center gap-2">Durum <SortIcon columnKey="durum" /></div>
               </th>
               <th className="py-3 px-4 rounded-tr-lg text-right">İşlem</th>
@@ -264,9 +264,9 @@ export default function Sifreler() {
           <tbody>
             {siraliSifreler.length === 0 ? (
               <tr>
-                <td colSpan="6" className="text-center py-12 text-gray-500">
+                <td colSpan="6" className="text-center py-12 text-gray-500 dark:text-gray-400">
                   <div className="flex flex-col items-center justify-center">
-                    <svg xmlns="http://www.w3.org/2000/svg" className="h-10 w-10 text-gray-300 mb-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <svg xmlns="http://www.w3.org/2000/svg" className="h-10 w-10 text-gray-300 dark:text-gray-600 mb-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
                     </svg>
                     <span>{sifreler.length === 0 ? "Sistemde kayıtlı şifre bulunmuyor." : "Filtreleme kriterlerinize uyan şifre bulunamadı."}</span>
@@ -275,18 +275,18 @@ export default function Sifreler() {
               </tr>
             ) : (
               gosterilecekSifreler.map((sifre) => (
-                <tr key={sifre.pin} className="border-b border-gray-50 hover:bg-gray-50/50 transition">
-                  <td className="py-4 px-4 font-mono font-bold text-indigo-600">{sifre.pin}</td>
-                  <td className="py-4 px-4 font-semibold text-gray-800">{sifre.KullaniciAdi}</td>
-                  <td className="py-4 px-4 text-gray-600 text-sm">{sifre.Baslangic}</td>
-                  <td className="py-4 px-4 text-gray-600 text-sm">{sifre.Bitis}</td>
+                <tr key={sifre.pin} className="border-b border-gray-50 dark:border-gray-700/50 hover:bg-gray-50/50 dark:hover:bg-gray-700/50 transition-colors">
+                  <td className="py-4 px-4 font-mono font-bold text-indigo-600 dark:text-indigo-400">{sifre.pin}</td>
+                  <td className="py-4 px-4 font-semibold text-gray-800 dark:text-white">{sifre.KullaniciAdi}</td>
+                  <td className="py-4 px-4 text-gray-600 dark:text-gray-400 text-sm">{sifre.Baslangic}</td>
+                  <td className="py-4 px-4 text-gray-600 dark:text-gray-400 text-sm">{sifre.Bitis}</td>
                   <td className="py-4 px-4">
-                    <span className={`px-3 py-1 rounded-full text-xs font-bold border ${sifre.durum.renk.replace('text', 'border').replace('100', '200')} ${sifre.durum.renk}`}>
+                    <span className={`px-3 py-1 rounded-full text-xs font-bold border ${sifre.durum.renk.replace('text', 'border').replace('100', '200')} dark:bg-opacity-20 ${sifre.durum.renk}`}>
                       {sifre.durum.etiket}
                     </span>
                   </td>
                   <td className="py-4 px-4 text-right">
-                    <button onClick={() => handleSifreIptal(sifre.pin)} className="text-red-500 hover:text-red-700 text-sm font-semibold hover:underline bg-red-50 px-3 py-1 rounded-lg transition">
+                    <button onClick={() => handleSifreIptal(sifre.pin)} className="text-red-500 dark:text-red-400 hover:text-red-700 dark:hover:text-red-300 text-sm font-semibold hover:underline bg-red-50 dark:bg-red-900/30 px-3 py-1 rounded-lg transition">
                       İptal Et
                     </button>
                   </td>
@@ -298,10 +298,10 @@ export default function Sifreler() {
 
         {/* SAYFALAMA BUTONLARI */}
         {toplamSayfa > 1 && (
-        <div className="flex items-center justify-between border-t border-gray-100 bg-white px-4 py-3 sm:px-6 mt-2 rounded-b-lg">
+        <div className="flex items-center justify-between border-t border-gray-100 dark:border-gray-700 bg-white dark:bg-gray-800 px-4 py-3 sm:px-6 mt-2 rounded-b-lg transition-colors">
           <div className="hidden sm:flex sm:flex-1 sm:items-center sm:justify-between">
             <div>
-              <p className="text-sm text-gray-700">
+              <p className="text-sm text-gray-700 dark:text-gray-300">
                 Toplam <span className="font-medium">{filtrelenmisSifreler.length}</span> kayıttan{' '}
                 <span className="font-medium">{ilkKayitIndeksi + 1}</span> -{' '}
                 <span className="font-medium">{Math.min(sonKayitIndeksi, filtrelenmisSifreler.length)}</span> arası gösteriliyor.
@@ -312,7 +312,7 @@ export default function Sifreler() {
                 <button
                   onClick={() => setMevcutSayfa(prev => Math.max(prev - 1, 1))}
                   disabled={mevcutSayfa === 1}
-                  className={`relative inline-flex items-center rounded-l-md px-2 py-2 text-gray-400 ring-1 ring-inset ring-gray-300 hover:bg-gray-50 focus:z-20 focus:outline-offset-0 ${mevcutSayfa === 1 ? 'opacity-50 cursor-not-allowed' : ''}`}
+                  className={`relative inline-flex items-center rounded-l-md px-2 py-2 text-gray-400 dark:text-gray-500 ring-1 ring-inset ring-gray-300 dark:ring-gray-600 hover:bg-gray-50 dark:hover:bg-gray-700 focus:z-20 focus:outline-offset-0 transition-colors ${mevcutSayfa === 1 ? 'opacity-50 cursor-not-allowed' : ''}`}
                 >
                   <span className="sr-only">Önceki</span>
                   <svg className="h-5 w-5" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
@@ -324,7 +324,7 @@ export default function Sifreler() {
                   <button
                     key={index}
                     onClick={() => setMevcutSayfa(index + 1)}
-                    className={`relative inline-flex items-center px-4 py-2 text-sm font-semibold focus:z-20 ${mevcutSayfa === index + 1 ? 'z-10 bg-indigo-600 text-white  focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600' : 'text-gray-900 ring-1 ring-inset ring-gray-300 hover:bg-gray-50 focus:outline-offset-0'}`}
+                    className={`relative inline-flex items-center px-4 py-2 text-sm font-semibold focus:z-20 transition-colors ${mevcutSayfa === index + 1 ? 'z-10 bg-indigo-600 text-white focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600' : 'text-gray-900 dark:text-gray-300 ring-1 ring-inset ring-gray-300 dark:ring-gray-600 hover:bg-gray-50 dark:hover:bg-gray-700 focus:outline-offset-0'}`}
                   >
                     {index + 1}
                   </button>
@@ -333,7 +333,7 @@ export default function Sifreler() {
                 <button
                   onClick={() => setMevcutSayfa(prev => Math.min(prev + 1, toplamSayfa))}
                   disabled={mevcutSayfa === toplamSayfa}
-                  className={`relative inline-flex items-center rounded-r-md px-2 py-2 text-gray-400 ring-1 ring-inset ring-gray-300 hover:bg-gray-50 focus:z-20 focus:outline-offset-0 ${mevcutSayfa === toplamSayfa ? 'opacity-50 cursor-not-allowed' : ''}`}
+                  className={`relative inline-flex items-center rounded-r-md px-2 py-2 text-gray-400 dark:text-gray-500 ring-1 ring-inset ring-gray-300 dark:ring-gray-600 hover:bg-gray-50 dark:hover:bg-gray-700 focus:z-20 focus:outline-offset-0 transition-colors ${mevcutSayfa === toplamSayfa ? 'opacity-50 cursor-not-allowed' : ''}`}
                 >
                   <span className="sr-only">Sonraki</span>
                   <svg className="h-5 w-5" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">

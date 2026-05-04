@@ -183,36 +183,36 @@ export default function Istekler() {
   };
 
   return (
-    <div className="relative bg-white rounded-xl shadow-sm border border-gray-100 p-6">
+    <div className="relative bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-100 dark:border-gray-700 p-6 transition-colors duration-300">
       
       {/* BAŞLIK VE MESAJ ALANI */}
       <div className="mb-6">
-        <h2 className="text-2xl font-bold text-gray-800">Kapı Yetki Talepleri</h2>
-        <p className="text-gray-500 text-sm mt-1">Kullanıcıların mobil uygulama üzerinden gönderdiği şifre taleplerini buradan yönetebilirsiniz.</p>
+        <h2 className="text-2xl font-bold text-gray-800 dark:text-white transition-colors">Kapı Yetki Talepleri</h2>
+        <p className="text-gray-500 dark:text-gray-400 text-sm mt-1 transition-colors">Kullanıcıların mobil uygulama üzerinden gönderdiği şifre taleplerini buradan yönetebilirsiniz.</p>
       </div>
 
       {mesaj.metin && (
-        <div className={`p-4 rounded-lg mb-6 text-sm font-medium ${mesaj.tip === 'basari' ? 'bg-green-50 text-green-700 border border-green-200' : 'bg-red-50 text-red-700 border border-red-200'}`}>
+        <div className={`p-4 rounded-lg mb-6 text-sm font-medium transition-colors ${mesaj.tip === 'basari' ? 'bg-green-50 dark:bg-green-900/30 text-green-700 dark:text-green-400 border border-green-200 dark:border-green-800/50' : 'bg-red-50 dark:bg-red-900/30 text-red-700 dark:text-red-400 border border-red-200 dark:border-red-800/50'}`}>
           {mesaj.metin}
         </div>
       )}
 
       {/* FİLTRELEME ÇUBUĞU */}
-      <div className="bg-gray-50 p-4 rounded-lg border border-gray-100 mb-6 flex flex-col md:flex-row gap-4">
+      <div className="bg-gray-50 dark:bg-gray-800/50 p-4 rounded-lg border border-gray-100 dark:border-gray-700 mb-6 flex flex-col md:flex-row gap-4 transition-colors">
         <div className="flex-1">
           <input 
             type="text" 
             placeholder="İsim veya açıklama ara..." 
             value={aramaMetni}
             onChange={(e) => { setAramaMetni(e.target.value); setMevcutSayfa(1); }}
-            className="w-full px-4 py-2.5 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 bg-white"
+            className="w-full px-4 py-2.5 border border-gray-200 dark:border-gray-600 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 bg-white dark:bg-gray-700 text-gray-800 dark:text-white transition-colors"
           />
         </div>
         <div className="w-full md:w-64">
           <select 
             value={filtreDurum}
             onChange={(e) => { setFiltreDurum(e.target.value); setMevcutSayfa(1); }}
-            className="w-full px-4 py-2.5 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 bg-white"
+            className="w-full px-4 py-2.5 border border-gray-200 dark:border-gray-600 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 bg-white dark:bg-gray-700 text-gray-800 dark:text-white transition-colors"
           >
             <option value="Tümü">Tüm Durumlar</option>
             <option value="Bekliyor">Bekleyenler</option>
@@ -226,7 +226,7 @@ export default function Istekler() {
       <div className="overflow-x-auto min-h-[250px]">
         <table className="w-full text-left">
           <thead>
-            <tr className="border-b bg-gray-50 text-gray-600 text-sm">
+            <tr className="border-b border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-800/80 text-gray-600 dark:text-gray-400 text-sm transition-colors">
               <th className="py-3 px-4 rounded-tl-lg font-semibold whitespace-nowrap">Kullanıcı Bilgisi</th>
               <th className="py-3 px-4 font-semibold min-w-[200px]">Talep Açıklaması</th>
               <th className="py-3 px-4 font-semibold whitespace-nowrap">Talep Edilen Aralığı</th>
@@ -237,38 +237,37 @@ export default function Istekler() {
           <tbody>
             {gosterilecekIstekler.length === 0 ? (
               <tr>
-                <td colSpan="5" className="text-center py-12 text-gray-500">Kayıtlı talep bulunamadı.</td>
+                <td colSpan="5" className="text-center py-12 text-gray-500 dark:text-gray-400">Kayıtlı talep bulunamadı.</td>
               </tr>
             ) : (
               gosterilecekIstekler.map((istek) => (
-                <tr key={istek.id} className="border-b border-gray-50 hover:bg-gray-50/50 transition">
-                  <td className="py-4 px-4 font-semibold text-gray-800 whitespace-nowrap">
+                <tr key={istek.id} className="border-b border-gray-50 dark:border-gray-700/50 hover:bg-gray-50/50 dark:hover:bg-gray-700/50 transition-colors">
+                  <td className="py-4 px-4 font-semibold text-gray-800 dark:text-white whitespace-nowrap">
                     {istek.KullaniciAdi}
                   </td>
-                  <td className="py-4 px-4 text-sm text-gray-600">
+                  <td className="py-4 px-4 text-sm text-gray-600 dark:text-gray-300">
                     {istek.Aciklama}
                   </td>
-                  <td className="py-4 px-4 text-sm text-gray-500 whitespace-nowrap">
+                  <td className="py-4 px-4 text-sm text-gray-500 dark:text-gray-400 whitespace-nowrap">
                     <div className="flex flex-col">
-                      <span><span className="font-semibold text-gray-700">Baş:</span> {istek.TalepBaslangic}</span>
-                      <span><span className="font-semibold text-gray-700">Bit:</span> {istek.TalepBitis}</span>
+                      <span><span className="font-semibold text-gray-700 dark:text-gray-300">Baş:</span> {istek.TalepBaslangic}</span>
+                      <span><span className="font-semibold text-gray-700 dark:text-gray-300">Bit:</span> {istek.TalepBitis}</span>
                     </div>
                   </td>
                   <td className="py-4 px-4">
                     {getDurumEtiketi(istek.Durum)}
                     {istek.AtananPIN && (
-                      <div className="text-xs text-indigo-600 font-bold mt-1 font-mono tracking-wider">PIN: {istek.AtananPIN}</div>
+                      <div className="text-xs text-indigo-600 dark:text-indigo-400 font-bold mt-1 font-mono tracking-wider">PIN: {istek.AtananPIN}</div>
                     )}
                   </td>
                   <td className="py-4 px-4 text-right whitespace-nowrap">
                     {istek.Durum === 'Bekliyor' ? (
                       <div className="flex justify-end gap-2">
-                        {/* Direkt Onaylamak yerine Modal'ı Açıyoruz */}
-                        <button onClick={() => modalAc(istek)} className="bg-green-100 text-green-700 hover:bg-green-600 hover:text-white px-3 py-1.5 rounded-lg text-sm font-semibold transition">Onayla / Düzenle</button>
-                        <button onClick={() => handleReddet(istek.id)} className="bg-red-100 text-red-700 hover:bg-red-600 hover:text-white px-3 py-1.5 rounded-lg text-sm font-semibold transition">Reddet</button>
+                        <button onClick={() => modalAc(istek)} className="bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-400 hover:bg-green-600 dark:hover:bg-green-500 hover:text-white px-3 py-1.5 rounded-lg text-sm font-semibold transition">Onayla / Düzenle</button>
+                        <button onClick={() => handleReddet(istek.id)} className="bg-red-100 dark:bg-red-900/30 text-red-700 dark:text-red-400 hover:bg-red-600 dark:hover:bg-red-500 hover:text-white px-3 py-1.5 rounded-lg text-sm font-semibold transition">Reddet</button>
                       </div>
                     ) : (
-                      <span className="text-xs text-gray-400 italic">İşlem Tamamlandı</span>
+                      <span className="text-xs text-gray-400 dark:text-gray-500 italic">İşlem Tamamlandı</span>
                     )}
                   </td>
                 </tr>
@@ -280,23 +279,23 @@ export default function Istekler() {
 
       {/* SAYFALAMA BUTONLARI */}
       {toplamSayfa > 1 && (
-        <div className="flex items-center justify-between border-t border-gray-100 bg-white px-4 py-3 sm:px-6 mt-2 rounded-b-lg">
+        <div className="flex items-center justify-between border-t border-gray-100 dark:border-gray-700 bg-white dark:bg-gray-800 px-4 py-3 sm:px-6 mt-2 rounded-b-lg transition-colors">
           <div className="hidden sm:flex sm:flex-1 sm:items-center sm:justify-between">
             <div>
-              <p className="text-sm text-gray-700">
+              <p className="text-sm text-gray-700 dark:text-gray-300">
                 Toplam <span className="font-medium">{filtrelenmisIstekler.length}</span> kayıttan <span className="font-medium">{ilkKayitIndeksi + 1}</span> - <span className="font-medium">{Math.min(sonKayitIndeksi, filtrelenmisIstekler.length)}</span> arası.
               </p>
             </div>
             <div>
               <nav className="isolate inline-flex -space-x-px rounded-md shadow-sm" aria-label="Pagination">
-                <button onClick={() => setMevcutSayfa(prev => Math.max(prev - 1, 1))} disabled={mevcutSayfa === 1} className={`relative inline-flex items-center rounded-l-md px-2 py-2 text-gray-400 ring-1 ring-inset ring-gray-300 hover:bg-gray-50 ${mevcutSayfa === 1 ? 'opacity-50 cursor-not-allowed' : ''}`}>
+                <button onClick={() => setMevcutSayfa(prev => Math.max(prev - 1, 1))} disabled={mevcutSayfa === 1} className={`relative inline-flex items-center rounded-l-md px-2 py-2 text-gray-400 dark:text-gray-500 ring-1 ring-inset ring-gray-300 dark:ring-gray-600 hover:bg-gray-50 dark:hover:bg-gray-700 ${mevcutSayfa === 1 ? 'opacity-50 cursor-not-allowed' : ''}`}>
                   <span className="sr-only">Önceki</span>
                   <svg className="h-5 w-5" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true"><path fillRule="evenodd" d="M12.79 5.23a.75.75 0 01-.02 1.06L8.832 10l3.938 3.71a.75.75 0 11-1.04 1.08l-4.5-4.25a.75.75 0 010-1.08l4.5-4.25a.75.75 0 011.06.02z" clipRule="evenodd" /></svg>
                 </button>
                 {[...Array(toplamSayfa)].map((_, index) => (
-                  <button key={index} onClick={() => setMevcutSayfa(index + 1)} className={`relative inline-flex items-center px-4 py-2 text-sm font-semibold focus:z-20 ${mevcutSayfa === index + 1 ? 'z-10 bg-indigo-600 text-white' : 'text-gray-900 ring-1 ring-inset ring-gray-300 hover:bg-gray-50'}`}>{index + 1}</button>
+                  <button key={index} onClick={() => setMevcutSayfa(index + 1)} className={`relative inline-flex items-center px-4 py-2 text-sm font-semibold focus:z-20 ${mevcutSayfa === index + 1 ? 'z-10 bg-indigo-600 text-white' : 'text-gray-900 dark:text-gray-300 ring-1 ring-inset ring-gray-300 dark:ring-gray-600 hover:bg-gray-50 dark:hover:bg-gray-700'}`}>{index + 1}</button>
                 ))}
-                <button onClick={() => setMevcutSayfa(prev => Math.min(prev + 1, toplamSayfa))} disabled={mevcutSayfa === toplamSayfa} className={`relative inline-flex items-center rounded-r-md px-2 py-2 text-gray-400 ring-1 ring-inset ring-gray-300 hover:bg-gray-50 ${mevcutSayfa === toplamSayfa ? 'opacity-50 cursor-not-allowed' : ''}`}>
+                <button onClick={() => setMevcutSayfa(prev => Math.min(prev + 1, toplamSayfa))} disabled={mevcutSayfa === toplamSayfa} className={`relative inline-flex items-center rounded-r-md px-2 py-2 text-gray-400 dark:text-gray-500 ring-1 ring-inset ring-gray-300 dark:ring-gray-600 hover:bg-gray-50 dark:hover:bg-gray-700 ${mevcutSayfa === toplamSayfa ? 'opacity-50 cursor-not-allowed' : ''}`}>
                   <span className="sr-only">Sonraki</span>
                   <svg className="h-5 w-5" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true"><path fillRule="evenodd" d="M7.21 14.77a.75.75 0 01.02-1.06L11.168 10 7.23 6.29a.75.75 0 111.04-1.08l4.5 4.25a.75.75 0 010 1.08l-4.5 4.25a.75.75 0 01-1.06-.02z" clipRule="evenodd" /></svg>
                 </button>
@@ -308,47 +307,45 @@ export default function Istekler() {
 
       {/* --- YENİ EKLENEN: ONAY VE TARİH DÜZENLEME MODALI --- */}
       {onayModal.goster && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-white/10 backdrop-blur-sm transition-opacity">
-          <div className="bg-white p-6 rounded-2xl shadow-2xl w-full max-w-md mx-4 transform transition-all">
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm transition-opacity">
+          <div className="bg-white dark:bg-gray-800 p-6 rounded-2xl shadow-2xl w-full max-w-md mx-4 transform transition-all border dark:border-gray-700">
             <div className="flex justify-between items-center mb-5">
-              <h3 className="text-xl font-bold text-gray-800">Talebi Onayla</h3>
-              <button onClick={modalKapat} className="text-gray-400 hover:text-gray-600 focus:outline-none">
+              <h3 className="text-xl font-bold text-gray-800 dark:text-white">Talebi Onayla</h3>
+              <button onClick={modalKapat} className="text-gray-400 hover:text-gray-600 dark:hover:text-gray-200 focus:outline-none transition">
                 <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12"></path></svg>
               </button>
             </div>
             
-            <p className="text-sm text-gray-600 mb-4">
-              <span className="font-semibold text-indigo-600">{onayModal.istek?.KullaniciAdi}</span> isimli kullanıcının yetki talebini onaylıyorsunuz. Dilerseniz saatleri aşağıdan değiştirebilirsiniz.
+            <p className="text-sm text-gray-600 dark:text-gray-300 mb-4">
+              <span className="font-semibold text-indigo-600 dark:text-indigo-400">{onayModal.istek?.KullaniciAdi}</span> isimli kullanıcının yetki talebini onaylıyorsunuz. Dilerseniz saatleri aşağıdan değiştirebilirsiniz.
             </p>
 
             <div className="space-y-4 mb-6">
               <div>
-                <label className="block text-xs font-bold text-gray-500 uppercase tracking-wider mb-1">Başlangıç Zamanı</label>
+                <label className="block text-xs font-bold text-gray-500 dark:text-gray-400 uppercase tracking-wider mb-1">Başlangıç Zamanı</label>
                 <input 
                   type="datetime-local" 
-                  // step="1" // Saniyeleri de göstermesi için
                   value={onayModal.baslangic} 
                   onChange={(e) => setOnayModal({...onayModal, baslangic: e.target.value})}
-                  className="w-full px-3 py-2.5 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition"
+                  className="w-full px-3 py-2.5 border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-800 dark:text-white rounded-lg text-sm focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition outline-none"
                 />
               </div>
               <div>
-                <label className="block text-xs font-bold text-gray-500 uppercase tracking-wider mb-1">Bitiş Zamanı</label>
+                <label className="block text-xs font-bold text-gray-500 dark:text-gray-400 uppercase tracking-wider mb-1">Bitiş Zamanı</label>
                 <input 
                   type="datetime-local" 
-                  // step="1" 
                   value={onayModal.bitis} 
                   onChange={(e) => setOnayModal({...onayModal, bitis: e.target.value})}
-                  className="w-full px-3 py-2.5 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition"
+                  className="w-full px-3 py-2.5 border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-800 dark:text-white rounded-lg text-sm focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition outline-none"
                 />
               </div>
             </div>
 
-            <div className="flex gap-3 justify-end">
-              <button onClick={modalKapat} className="px-4 py-2 bg-white border border-gray-300 text-gray-700 rounded-lg text-sm font-semibold hover:bg-gray-50 transition">
+            <div className="flex gap-3 justify-end pt-2 border-t dark:border-gray-700">
+              <button onClick={modalKapat} className="px-4 py-2 bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-200 rounded-lg text-sm font-semibold hover:bg-gray-50 dark:hover:bg-gray-600 transition">
                 İptal
               </button>
-              <button onClick={handleKesinOnay} className="px-4 py-2 bg-indigo-600 text-white rounded-lg text-sm font-semibold hover:bg-indigo-700 shadow-md shadow-indigo-200 transition">
+              <button onClick={handleKesinOnay} className="px-4 py-2 bg-indigo-600 text-white rounded-lg text-sm font-semibold hover:bg-indigo-700 shadow-md shadow-indigo-200 dark:shadow-none transition">
                 Şifre Üret ve Onayla
               </button>
             </div>

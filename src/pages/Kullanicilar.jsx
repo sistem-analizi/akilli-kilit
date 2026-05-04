@@ -205,13 +205,13 @@ export default function Kullanicilar() {
   };
 
   return (
-    <div className="bg-white rounded-xl shadow-sm p-6 relative">
+    <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm p-6 relative transition-colors duration-300">
       
      {/* ÜST BAŞLIK VE AKSİYONLAR */}
       <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-6 gap-4">
         <div>
-          <h2 className="text-xl font-bold text-gray-800">Kullanıcı Yönetimi</h2>
-          <p className="text-sm text-gray-500">Sistemdeki tüm kayıtlı kullanıcılar</p>
+          <h2 className="text-xl font-bold text-gray-800 dark:text-white transition-colors">Kullanıcı Yönetimi</h2>
+          <p className="text-sm text-gray-500 dark:text-gray-400 transition-colors">Sistemdeki tüm kayıtlı kullanıcılar</p>
         </div>
         
         <div className="flex w-full md:w-auto gap-3">
@@ -222,9 +222,9 @@ export default function Kullanicilar() {
               placeholder="İsim veya e-posta ile ara..." 
               value={aramaMetni}
               onChange={(e) => { setAramaMetni(e.target.value); setMevcutSayfa(1); }}
-              className="w-full pl-10 pr-4 py-2 border border-gray-200 rounded-lg text-sm focus:ring-2 focus:ring-indigo-500 outline-none transition"
+              className="w-full pl-10 pr-4 py-2 border border-gray-200 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-800 dark:text-white rounded-lg text-sm focus:ring-2 focus:ring-indigo-500 dark:focus:ring-indigo-400 outline-none transition-colors"
             />
-            <svg className="w-5 h-5 absolute left-3 top-2.5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <svg className="w-5 h-5 absolute left-3 top-2.5 text-gray-400 dark:text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
             </svg>
           </div>
@@ -240,7 +240,7 @@ export default function Kullanicilar() {
 
       {/* MESAJ KUTUSU */}
       {mesaj.metin && (
-        <div className={`p-4 rounded-lg mb-6 text-sm font-medium ${mesaj.tip === 'basari' ? 'bg-green-50 text-green-700' : 'bg-red-50 text-red-700'}`}>
+        <div className={`p-4 rounded-lg mb-6 text-sm font-medium transition-colors ${mesaj.tip === 'basari' ? 'bg-green-50 dark:bg-green-900/30 text-green-700 dark:text-green-400' : 'bg-red-50 dark:bg-red-900/30 text-red-700 dark:text-red-400'}`}>
           {mesaj.metin}
         </div>
       )}
@@ -249,7 +249,7 @@ export default function Kullanicilar() {
       <div className="overflow-x-auto">
         <table className="w-full text-left">
           <thead>
-            <tr className="border-b text-gray-500 text-sm bg-gray-50">
+            <tr className="border-b border-gray-200 dark:border-gray-700 text-gray-500 dark:text-gray-400 text-sm bg-gray-50 dark:bg-gray-800/50 transition-colors">
               <th className="py-3 px-4">Ad Soyad</th>
               <th className="py-3 px-4">E-posta</th>
               <th className="py-3 px-4">Giriş Şifresi</th>
@@ -259,7 +259,7 @@ export default function Kullanicilar() {
           <tbody>
             {filtrelenmisKullanicilar.length === 0 ? (
               <tr>
-                <td colSpan="4" className="text-center py-12 text-gray-400">
+                <td colSpan="4" className="text-center py-12 text-gray-400 dark:text-gray-500">
                   {kullanicilar.length === 0 ? "Henüz kullanıcı yok." : "Arama kriterine uygun kullanıcı bulunamadı."}
                 </td>
               </tr>
@@ -270,23 +270,23 @@ export default function Kullanicilar() {
                 const isSonSatirlar = gosterilecekKullanicilar.length > 2 && index >= gosterilecekKullanicilar.length - 2;
 
               return (
-                <tr key={u.id} className="border-b hover:bg-gray-50 transition">
-                  <td className="py-4 px-4 font-medium text-gray-800">{u.Ad}</td>
-                  <td className="py-4 px-4 text-gray-600">{u.Email}</td>
-                  <td className="py-4 px-4 text-gray-600 font-mono">{u.Sifre || '---'}</td>
+                <tr key={u.id} className="border-b border-gray-100 dark:border-gray-700/50 hover:bg-gray-50 dark:hover:bg-gray-700/50 transition-colors">
+                  <td className="py-4 px-4 font-medium text-gray-800 dark:text-white">{u.Ad}</td>
+                  <td className="py-4 px-4 text-gray-600 dark:text-gray-300">{u.Email}</td>
+                  <td className="py-4 px-4 text-gray-600 dark:text-gray-400 font-mono">{u.Sifre || '---'}</td>
                   <td className="py-4 px-4 text-right relative">
-                    <button onClick={() => setAcikMenuId(acikMenuId === u.id ? null : u.id)} className="text-gray-400 hover:text-gray-700 p-2 rounded-full hover:bg-gray-200 transition">
+                    <button onClick={() => setAcikMenuId(acikMenuId === u.id ? null : u.id)} className="text-gray-400 dark:text-gray-500 hover:text-gray-700 dark:hover:text-gray-200 p-2 rounded-full hover:bg-gray-200 dark:hover:bg-gray-600 transition-colors">
                       <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
                         <path d="M10 6a2 2 0 110-4 2 2 0 010 4zM10 12a2 2 0 110-4 2 2 0 010 4zM10 18a2 2 0 110-4 2 2 0 010 4z" />
                       </svg>
                     </button>
 
                     {acikMenuId === u.id && (
-                      <div className={`absolute right-12 w-40 bg-white border border-gray-100 rounded-lg shadow-2xl z-50 py-1 overflow-hidden ${isSonSatirlar ? 'bottom-10 mb-1' : 'top-10 mt-1'}`}>
-                        <button onClick={() => { setSeciliKullanici(u); setIsPinModalOpen(true); setAcikMenuId(null); }} className="w-full text-left px-4 py-2 text-sm text-indigo-600 hover:bg-indigo-50 font-medium">PIN Ata</button>
-                        <button onClick={() => { setSeciliKullanici(u); setEditForm({ Ad: u.Ad, Email: u.Email, Sifre: u.Sifre || '' }); setIsEditModalOpen(true); setAcikMenuId(null); }} className="w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-50">Düzenle</button>
-                        <div className="border-t border-gray-100 my-1"></div>
-                        <button onClick={() => handleKullaniciSil(u.id)} className="w-full text-left px-4 py-2 text-sm text-red-600 hover:bg-red-50 font-medium">Kullanıcıyı Sil</button>
+                      <div className={`absolute right-12 w-40 bg-white dark:bg-gray-800 border border-gray-100 dark:border-gray-600 rounded-lg shadow-2xl z-50 py-1 overflow-hidden transition-colors ${isSonSatirlar ? 'bottom-10 mb-1' : 'top-10 mt-1'}`}>
+                        <button onClick={() => { setSeciliKullanici(u); setIsPinModalOpen(true); setAcikMenuId(null); }} className="w-full text-left px-4 py-2 text-sm text-indigo-600 dark:text-indigo-400 hover:bg-indigo-50 dark:hover:bg-gray-700 font-medium transition-colors">PIN Ata</button>
+                        <button onClick={() => { setSeciliKullanici(u); setEditForm({ Ad: u.Ad, Email: u.Email, Sifre: u.Sifre || '' }); setIsEditModalOpen(true); setAcikMenuId(null); }} className="w-full text-left px-4 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors">Düzenle</button>
+                        <div className="border-t border-gray-100 dark:border-gray-600 my-1"></div>
+                        <button onClick={() => handleKullaniciSil(u.id)} className="w-full text-left px-4 py-2 text-sm text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-gray-700 font-medium transition-colors">Kullanıcıyı Sil</button>
                       </div>
                     )}
                   </td>
@@ -298,10 +298,10 @@ export default function Kullanicilar() {
         </table>
 
       {toplamSayfa > 1 && (
-        <div className="flex items-center justify-between border-t border-gray-100 bg-white px-4 py-3 sm:px-6 mt-2 rounded-b-lg">
+        <div className="flex items-center justify-between border-t border-gray-100 dark:border-gray-700 bg-white dark:bg-gray-800 px-4 py-3 sm:px-6 mt-2 rounded-b-lg transition-colors">
           <div className="hidden sm:flex sm:flex-1 sm:items-center sm:justify-between">
             <div>
-              <p className="text-sm text-gray-700">
+              <p className="text-sm text-gray-700 dark:text-gray-300">
                 Toplam <span className="font-medium">{kullanicilar.length}</span> kayıttan{' '}
                 <span className="font-medium">{ilkKayitIndeksi + 1}</span> -{' '}
                 <span className="font-medium">{Math.min(sonKayitIndeksi, kullanicilar.length)}</span> arası gösteriliyor.
@@ -312,7 +312,7 @@ export default function Kullanicilar() {
                 <button
                   onClick={() => setMevcutSayfa(prev => Math.max(prev - 1, 1))}
                   disabled={mevcutSayfa === 1}
-                  className={`relative inline-flex items-center rounded-l-md px-2 py-2 text-gray-400 ring-1 ring-inset ring-gray-300 hover:bg-gray-50 focus:z-20 focus:outline-offset-0 ${mevcutSayfa === 1 ? 'opacity-50 cursor-not-allowed' : ''}`}
+                  className={`relative inline-flex items-center rounded-l-md px-2 py-2 text-gray-400 dark:text-gray-500 ring-1 ring-inset ring-gray-300 dark:ring-gray-600 hover:bg-gray-50 dark:hover:bg-gray-700 focus:z-20 focus:outline-offset-0 transition-colors ${mevcutSayfa === 1 ? 'opacity-50 cursor-not-allowed' : ''}`}
                 >
                   <span className="sr-only">Önceki</span>
                   <svg className="h-5 w-5" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
@@ -325,7 +325,7 @@ export default function Kullanicilar() {
                   <button
                     key={index}
                     onClick={() => setMevcutSayfa(index + 1)}
-                    className={`relative inline-flex items-center px-4 py-2 text-sm font-semibold focus:z-20 ${mevcutSayfa === index + 1 ? 'z-10 bg-indigo-600 text-white  focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600' : 'text-gray-900 ring-1 ring-inset ring-gray-300 hover:bg-gray-50 focus:outline-offset-0'}`}
+                    className={`relative inline-flex items-center px-4 py-2 text-sm font-semibold focus:z-20 transition-colors ${mevcutSayfa === index + 1 ? 'z-10 bg-indigo-600 text-white focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600' : 'text-gray-900 dark:text-gray-300 ring-1 ring-inset ring-gray-300 dark:ring-gray-600 hover:bg-gray-50 dark:hover:bg-gray-700 focus:outline-offset-0'}`}
                   >
                     {index + 1}
                   </button>
@@ -334,7 +334,7 @@ export default function Kullanicilar() {
                 <button
                   onClick={() => setMevcutSayfa(prev => Math.min(prev + 1, toplamSayfa))}
                   disabled={mevcutSayfa === toplamSayfa}
-                  className={`relative inline-flex items-center rounded-r-md px-2 py-2 text-gray-400 ring-1 ring-inset ring-gray-300 hover:bg-gray-50 focus:z-20 focus:outline-offset-0 ${mevcutSayfa === toplamSayfa ? 'opacity-50 cursor-not-allowed' : ''}`}
+                  className={`relative inline-flex items-center rounded-r-md px-2 py-2 text-gray-400 dark:text-gray-500 ring-1 ring-inset ring-gray-300 dark:ring-gray-600 hover:bg-gray-50 dark:hover:bg-gray-700 focus:z-20 focus:outline-offset-0 transition-colors ${mevcutSayfa === toplamSayfa ? 'opacity-50 cursor-not-allowed' : ''}`}
                 >
                   <span className="sr-only">Sonraki</span>
                   <svg className="h-5 w-5" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
@@ -351,16 +351,16 @@ export default function Kullanicilar() {
 
       {/* YENİ KULLANICI EKLE MODALI */}
       {isEkleModalOpen && (
-        <div className="fixed inset-0 bg-black/50 flex items-center justify-center p-4 z-50">
-          <div className="bg-white p-6 rounded-xl w-full max-w-md shadow-2xl">
-            <h3 className="text-lg font-bold mb-4 text-gray-800">Yeni Kullanıcı Ekle</h3>
+        <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center p-4 z-50">
+          <div className="bg-white dark:bg-gray-800 p-6 rounded-xl w-full max-w-md shadow-2xl border dark:border-gray-700 transition-colors">
+            <h3 className="text-lg font-bold mb-4 text-gray-800 dark:text-white">Yeni Kullanıcı Ekle</h3>
             <form onSubmit={handleKullaniciEkle} className="space-y-4">
-              <input type="text" required value={ekleForm.Ad} onChange={e => setEkleForm({...ekleForm, Ad: e.target.value})} className="w-full p-2 border rounded-lg focus:ring-2 focus:ring-indigo-500 outline-none" placeholder="Ad Soyad" />
-              <input type="email" required value={ekleForm.Email} onChange={e => setEkleForm({...ekleForm, Email: e.target.value})} className="w-full p-2 border rounded-lg focus:ring-2 focus:ring-indigo-500 outline-none" placeholder="E-posta Adresi" />
-              <input type="text" value={ekleForm.Sifre} onChange={e => setEkleForm({...ekleForm, Sifre: e.target.value})} className="w-full p-2 border rounded-lg focus:ring-2 focus:ring-indigo-500 outline-none" placeholder="Kullanıcı Şifresi" />
+              <input type="text" required value={ekleForm.Ad} onChange={e => setEkleForm({...ekleForm, Ad: e.target.value})} className="w-full p-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-indigo-500 bg-white dark:bg-gray-700 text-gray-800 dark:text-white outline-none transition-colors" placeholder="Ad Soyad" />
+              <input type="email" required value={ekleForm.Email} onChange={e => setEkleForm({...ekleForm, Email: e.target.value})} className="w-full p-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-indigo-500 bg-white dark:bg-gray-700 text-gray-800 dark:text-white outline-none transition-colors" placeholder="E-posta Adresi" />
+              <input type="text" value={ekleForm.Sifre} onChange={e => setEkleForm({...ekleForm, Sifre: e.target.value})} className="w-full p-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-indigo-500 bg-white dark:bg-gray-700 text-gray-800 dark:text-white outline-none transition-colors" placeholder="Kullanıcı Şifresi" />
               <div className="flex gap-2 pt-2">
-                <button type="button" onClick={() => setIsEkleModalOpen(false)} className="flex-1 bg-gray-100 text-gray-700 font-medium py-2 rounded-lg hover:bg-gray-200">İptal</button>
-                <button type="submit" className="flex-1 bg-indigo-600 text-white font-medium py-2 rounded-lg hover:bg-indigo-700">Kullanıcıyı Kaydet</button>
+                <button type="button" onClick={() => setIsEkleModalOpen(false)} className="flex-1 bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-200 font-medium py-2 rounded-lg hover:bg-gray-200 dark:hover:bg-gray-600 transition-colors">İptal</button>
+                <button type="submit" className="flex-1 bg-indigo-600 text-white font-medium py-2 rounded-lg hover:bg-indigo-700 transition-colors">Kullanıcıyı Kaydet</button>
               </div>
             </form>
           </div>
@@ -369,16 +369,16 @@ export default function Kullanicilar() {
 
       {/* DÜZENLEME MODALI */}
       {isEditModalOpen && (
-        <div className="fixed inset-0 bg-black/50 flex items-center justify-center p-4 z-50">
-          <div className="bg-white p-6 rounded-xl w-full max-w-md shadow-2xl">
-            <h3 className="text-lg font-bold mb-4 text-gray-800">Bilgileri Düzenle</h3>
+        <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center p-4 z-50">
+          <div className="bg-white dark:bg-gray-800 p-6 rounded-xl w-full max-w-md shadow-2xl border dark:border-gray-700 transition-colors">
+            <h3 className="text-lg font-bold mb-4 text-gray-800 dark:text-white">Bilgileri Düzenle</h3>
             <form onSubmit={handleGuncelle} className="space-y-4">
-              <input type="text" required value={editForm.Ad} onChange={e => setEditForm({...editForm, Ad: e.target.value})} className="w-full p-2 border rounded-lg focus:ring-2 focus:ring-indigo-500 outline-none" placeholder="Ad Soyad" />
-              <input type="email" required value={editForm.Email} onChange={e => setEditForm({...editForm, Email: e.target.value})} className="w-full p-2 border rounded-lg focus:ring-2 focus:ring-indigo-500 outline-none" placeholder="Email" />
-              <input type="text" value={editForm.Sifre} onChange={e => setEditForm({...editForm, Sifre: e.target.value})} className="w-full p-2 border rounded-lg focus:ring-2 focus:ring-indigo-500 outline-none" placeholder="Şifre" />
+              <input type="text" required value={editForm.Ad} onChange={e => setEditForm({...editForm, Ad: e.target.value})} className="w-full p-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-indigo-500 bg-white dark:bg-gray-700 text-gray-800 dark:text-white outline-none transition-colors" placeholder="Ad Soyad" />
+              <input type="email" required value={editForm.Email} onChange={e => setEditForm({...editForm, Email: e.target.value})} className="w-full p-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-indigo-500 bg-white dark:bg-gray-700 text-gray-800 dark:text-white outline-none transition-colors" placeholder="Email" />
+              <input type="text" value={editForm.Sifre} onChange={e => setEditForm({...editForm, Sifre: e.target.value})} className="w-full p-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-indigo-500 bg-white dark:bg-gray-700 text-gray-800 dark:text-white outline-none transition-colors" placeholder="Şifre" />
               <div className="flex gap-2 pt-2">
-                <button type="button" onClick={() => setIsEditModalOpen(false)} className="flex-1 bg-gray-100 text-gray-700 font-medium py-2 rounded-lg hover:bg-gray-200">İptal</button>
-                <button type="submit" className="flex-1 bg-green-600 text-white font-medium py-2 rounded-lg hover:bg-green-700">Güncelle</button>
+                <button type="button" onClick={() => setIsEditModalOpen(false)} className="flex-1 bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-200 font-medium py-2 rounded-lg hover:bg-gray-200 dark:hover:bg-gray-600 transition-colors">İptal</button>
+                <button type="submit" className="flex-1 bg-green-600 text-white font-medium py-2 rounded-lg hover:bg-green-700 transition-colors">Güncelle</button>
               </div>
             </form>
           </div>
@@ -387,21 +387,21 @@ export default function Kullanicilar() {
 
       {/* PIN ATA MODALI */}
       {isPinModalOpen && (
-        <div className="fixed inset-0 bg-black/50 flex items-center justify-center p-4 z-50">
-          <div className="bg-white p-6 rounded-xl w-full max-w-md shadow-2xl">
-            <h3 className="text-lg font-bold mb-4 text-gray-800">{seciliKullanici?.Ad} İçin PIN Ata</h3>
+        <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center p-4 z-50">
+          <div className="bg-white dark:bg-gray-800 p-6 rounded-xl w-full max-w-md shadow-2xl border dark:border-gray-700 transition-colors">
+            <h3 className="text-lg font-bold mb-4 text-gray-800 dark:text-white">{seciliKullanici?.Ad} İçin PIN Ata</h3>
             {pinMesaj.metin && (
-        <div className={`p-4 rounded-lg mb-6 text-sm font-medium ${pinMesaj.tip === 'basari' ? 'bg-green-50 text-green-700' : 'bg-red-50 text-red-700'}`}>
-          {pinMesaj.metin}
-        </div>
-      )}
+              <div className={`p-4 rounded-lg mb-6 text-sm font-medium transition-colors ${pinMesaj.tip === 'basari' ? 'bg-green-50 dark:bg-green-900/30 text-green-700 dark:text-green-400' : 'bg-red-50 dark:bg-red-900/30 text-red-700 dark:text-red-400'}`}>
+                {pinMesaj.metin}
+              </div>
+            )}
             <form onSubmit={handlePinAta} className="space-y-4">
-              <input type="number" required onChange={e => setPinForm({...pinForm, pin: e.target.value})} className="w-full p-2 border rounded-lg focus:ring-2 focus:ring-indigo-500 outline-none" placeholder="Kapı PIN Kodu (Örn: 1453)" />
-              <input type="datetime-local" required onChange={e => setPinForm({...pinForm, baslangic: e.target.value})} className="w-full p-2 border rounded-lg focus:ring-2 focus:ring-indigo-500 outline-none" />
-              <input type="datetime-local" required onChange={e => setPinForm({...pinForm, bitis: e.target.value})} className="w-full p-2 border rounded-lg focus:ring-2 focus:ring-indigo-500 outline-none" />
+              <input type="number" required onChange={e => setPinForm({...pinForm, pin: e.target.value})} className="w-full p-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-indigo-500 bg-white dark:bg-gray-700 text-gray-800 dark:text-white outline-none transition-colors" placeholder="Kapı PIN Kodu (Örn: 1453)" />
+              <input type="datetime-local" required onChange={e => setPinForm({...pinForm, baslangic: e.target.value})} className="w-full p-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-indigo-500 bg-white dark:bg-gray-700 text-gray-800 dark:text-white outline-none transition-colors" />
+              <input type="datetime-local" required onChange={e => setPinForm({...pinForm, bitis: e.target.value})} className="w-full p-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-indigo-500 bg-white dark:bg-gray-700 text-gray-800 dark:text-white outline-none transition-colors" />
               <div className="flex gap-2 pt-2">
-                <button type="button" onClick={() => { setIsPinModalOpen(false); setPinMesaj({ tip: '', metin: '' }); }} className="flex-1 bg-gray-100 text-gray-700 font-medium py-2 rounded-lg hover:bg-gray-200">İptal</button>
-                <button type="submit" className="flex-1 bg-indigo-600 text-white font-medium py-2 rounded-lg hover:bg-indigo-700">PIN Kaydet</button>
+                <button type="button" onClick={() => { setIsPinModalOpen(false); setPinMesaj({ tip: '', metin: '' }); }} className="flex-1 bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-200 font-medium py-2 rounded-lg hover:bg-gray-200 dark:hover:bg-gray-600 transition-colors">İptal</button>
+                <button type="submit" className="flex-1 bg-indigo-600 text-white font-medium py-2 rounded-lg hover:bg-indigo-700 transition-colors">PIN Kaydet</button>
               </div>
             </form>
           </div>
