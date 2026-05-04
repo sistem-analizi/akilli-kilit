@@ -20,6 +20,14 @@ export default function Istekler() {
   // MESAJ STATE'İ
   const [mesaj, setMesaj] = useState({ tip: '', metin: '' });
 
+  // --- YENİ EKLENEN: ONAY MODAL STATE'İ ---
+  const [onayModal, setOnayModal] = useState({
+    goster: false,
+    istek: null,
+    baslangic: '',
+    bitis: ''
+  });
+
   useEffect(() => {
     const isteklerRef = ref(db, 'KilitSistemi/Istekler');
     
@@ -45,15 +53,36 @@ export default function Istekler() {
     });
   }, []);
 
-  // MESAJ GÖSTERİCİ YARDIMCI FONKSİYON
   const mesajGoster = (tip, metin) => {
     setMesaj({ tip, metin });
     setTimeout(() => setMesaj({ tip: '', metin: '' }), 3000);
   };
 
-  // --- ONAYLAMA VE OTOMATİK PIN ATAMA MANTIĞI ---
-  const handleOnayla = async (istek) => {
+  // --- MODALI AÇMA FONKSİYONU ---
+  const modalAc = (istek) => {
+    setOnayModal({
+      goster: true,
+      istek: istek,
+      // HTML datetime-local inputu boşluk kabul etmez, "T" harfi koymamız gerek
+      baslangic: istek.TalepBaslangic.replace(" ", "T"), 
+      bitis: istek.TalepBitis.replace(" ", "T")
+    });
+  };
+
+  // --- MODALI KAPATMA FONKSİYONU ---
+  const modalKapat = () => {
+    setOnayModal({ goster: false, istek: null, baslangic: '', bitis: '' });
+  };
+
+  // --- KESİN ONAYLAMA VE PIN ATAMA (Modal İçindeki Buton Çalıştırır) ---
+  const handleKesinOnay = async () => {
     try {
+      const { istek, baslangic, bitis } = onayModal;
+      
+      // Kaydederken "T" harfini tekrar boşluğa çeviriyoruz ki ESP32 şaşırmasın
+      const dbBaslangic = baslangic.replace("T", " ");
+      const dbBitis = bitis.replace("T", " ");
+
       const sifrelerRef = ref(db, 'KilitSistemi/Sifreler');
       const snapshot = await get(sifrelerRef);
       const mevcutSifreler = snapshot.exists() ? snapshot.val() : {};
@@ -66,22 +95,21 @@ export default function Istekler() {
       });
 
       if (kullanicininAktifSifresiVarMi) {
+        modalKapat();
         mesajGoster('hata', `${istek.KullaniciAdi} isimli kullanıcının şu an aktif bir şifresi zaten var!`);
         return;
       }
 
-      // 2. Rastgele ve Benzersiz 4 Haneli PIN Üretme (Süresi dolanları boşta sayar)
+      // 2. Rastgele ve Benzersiz 4 Haneli PIN Üretme
       let yeniPin;
       let pinBenzersizMi = false;
       
       while (!pinBenzersizMi) {
-        yeniPin = rastgelePinUret(); // Bileşen dışındaki fonksiyondan geliyor
+        yeniPin = rastgelePinUret(); 
         
         if (!mevcutSifreler[yeniPin]) {
-          // PIN veritabanında hiç yoksa kullan
           pinBenzersizMi = true;
         } else {
-          // PIN var ama süresi dolmuşsa kullan
           const eskiSifreBitis = new Date(mevcutSifreler[yeniPin].Bitis.replace(" ", "T"));
           if (eskiSifreBitis < suAn) {
             pinBenzersizMi = true;
@@ -89,24 +117,28 @@ export default function Istekler() {
         }
       }
 
-      // 3. Şifreyi Veritabanına Kaydet (Eski PIN'in üzerine yazar)
+      // 3. Şifreyi Veritabanına Kaydet (Adminin değiştirdiği yeni tarihlerle)
       await set(ref(db, `KilitSistemi/Sifreler/${yeniPin}`), {
         UserID: istek.UserID,
         KullaniciAdi: istek.KullaniciAdi,
-        Baslangic: istek.TalepBaslangic,
-        Bitis: istek.TalepBitis
+        Baslangic: dbBaslangic,
+        Bitis: dbBitis
       });
 
-      // 4. İsteğin Durumunu Güncelle
+      // 4. İsteğin Durumunu Güncelle (İstek tablosundaki tarihleri de güncelleyelim ki uyuşsun)
       await update(ref(db, `KilitSistemi/Istekler/${istek.id}`), {
         Durum: 'Onaylandı',
-        AtananPIN: yeniPin
+        AtananPIN: yeniPin,
+        TalepBaslangic: dbBaslangic,
+        TalepBitis: dbBitis
       });
 
+      modalKapat();
       mesajGoster('basari', `İstek onaylandı! Atanan PIN: ${yeniPin}`);
 
     } catch (error) {
       console.error("Onaylama Hatası:", error);
+      modalKapat();
       mesajGoster('hata', 'İşlem sırasında bir hata oluştu.');
     }
   };
@@ -124,7 +156,7 @@ export default function Istekler() {
     }
   };
 
-  // --- FİLTRELEME MANTIĞI ---
+  // --- FİLTRELEME VE SAYFALAMA MANTIĞI ---
   const filtrelenmisIstekler = istekler.filter((istek) => {
     const aramaKucuk = aramaMetni.toLowerCase();
     const isimEslesmesi = istek.KullaniciAdi?.toLowerCase().includes(aramaKucuk);
@@ -136,14 +168,12 @@ export default function Istekler() {
     return aramaUygun && durumUygun;
   });
 
-  // --- SAYFALAMA MATEMATİĞİ ---
   const sonKayitIndeksi = mevcutSayfa * kayitSayisi;
   const ilkKayitIndeksi = sonKayitIndeksi - kayitSayisi;
   
   const gosterilecekIstekler = filtrelenmisIstekler.slice(ilkKayitIndeksi, sonKayitIndeksi);
   const toplamSayfa = Math.ceil(filtrelenmisIstekler.length / kayitSayisi);
 
-  // ROZET TASARIMLARI
   const getDurumEtiketi = (durum) => {
     switch (durum) {
       case 'Onaylandı': return <span className="px-3 py-1 bg-green-100 text-green-700 rounded-full text-xs font-bold border border-green-200">Onaylandı</span>;
@@ -153,7 +183,7 @@ export default function Istekler() {
   };
 
   return (
-    <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-6">
+    <div className="relative bg-white rounded-xl shadow-sm border border-gray-100 p-6">
       
       {/* BAŞLIK VE MESAJ ALANI */}
       <div className="mb-6">
@@ -233,7 +263,8 @@ export default function Istekler() {
                   <td className="py-4 px-4 text-right whitespace-nowrap">
                     {istek.Durum === 'Bekliyor' ? (
                       <div className="flex justify-end gap-2">
-                        <button onClick={() => handleOnayla(istek)} className="bg-green-100 text-green-700 hover:bg-green-600 hover:text-white px-3 py-1.5 rounded-lg text-sm font-semibold transition">Onayla</button>
+                        {/* Direkt Onaylamak yerine Modal'ı Açıyoruz */}
+                        <button onClick={() => modalAc(istek)} className="bg-green-100 text-green-700 hover:bg-green-600 hover:text-white px-3 py-1.5 rounded-lg text-sm font-semibold transition">Onayla / Düzenle</button>
                         <button onClick={() => handleReddet(istek.id)} className="bg-red-100 text-red-700 hover:bg-red-600 hover:text-white px-3 py-1.5 rounded-lg text-sm font-semibold transition">Reddet</button>
                       </div>
                     ) : (
@@ -259,12 +290,14 @@ export default function Istekler() {
             <div>
               <nav className="isolate inline-flex -space-x-px rounded-md shadow-sm" aria-label="Pagination">
                 <button onClick={() => setMevcutSayfa(prev => Math.max(prev - 1, 1))} disabled={mevcutSayfa === 1} className={`relative inline-flex items-center rounded-l-md px-2 py-2 text-gray-400 ring-1 ring-inset ring-gray-300 hover:bg-gray-50 ${mevcutSayfa === 1 ? 'opacity-50 cursor-not-allowed' : ''}`}>
+                  <span className="sr-only">Önceki</span>
                   <svg className="h-5 w-5" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true"><path fillRule="evenodd" d="M12.79 5.23a.75.75 0 01-.02 1.06L8.832 10l3.938 3.71a.75.75 0 11-1.04 1.08l-4.5-4.25a.75.75 0 010-1.08l4.5-4.25a.75.75 0 011.06.02z" clipRule="evenodd" /></svg>
                 </button>
                 {[...Array(toplamSayfa)].map((_, index) => (
                   <button key={index} onClick={() => setMevcutSayfa(index + 1)} className={`relative inline-flex items-center px-4 py-2 text-sm font-semibold focus:z-20 ${mevcutSayfa === index + 1 ? 'z-10 bg-indigo-600 text-white' : 'text-gray-900 ring-1 ring-inset ring-gray-300 hover:bg-gray-50'}`}>{index + 1}</button>
                 ))}
                 <button onClick={() => setMevcutSayfa(prev => Math.min(prev + 1, toplamSayfa))} disabled={mevcutSayfa === toplamSayfa} className={`relative inline-flex items-center rounded-r-md px-2 py-2 text-gray-400 ring-1 ring-inset ring-gray-300 hover:bg-gray-50 ${mevcutSayfa === toplamSayfa ? 'opacity-50 cursor-not-allowed' : ''}`}>
+                  <span className="sr-only">Sonraki</span>
                   <svg className="h-5 w-5" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true"><path fillRule="evenodd" d="M7.21 14.77a.75.75 0 01.02-1.06L11.168 10 7.23 6.29a.75.75 0 111.04-1.08l4.5 4.25a.75.75 0 010 1.08l-4.5 4.25a.75.75 0 01-1.06-.02z" clipRule="evenodd" /></svg>
                 </button>
               </nav>
@@ -272,6 +305,57 @@ export default function Istekler() {
           </div>
         </div>
       )}
+
+      {/* --- YENİ EKLENEN: ONAY VE TARİH DÜZENLEME MODALI --- */}
+      {onayModal.goster && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-white/10 backdrop-blur-sm transition-opacity">
+          <div className="bg-white p-6 rounded-2xl shadow-2xl w-full max-w-md mx-4 transform transition-all">
+            <div className="flex justify-between items-center mb-5">
+              <h3 className="text-xl font-bold text-gray-800">Talebi Onayla</h3>
+              <button onClick={modalKapat} className="text-gray-400 hover:text-gray-600 focus:outline-none">
+                <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12"></path></svg>
+              </button>
+            </div>
+            
+            <p className="text-sm text-gray-600 mb-4">
+              <span className="font-semibold text-indigo-600">{onayModal.istek?.KullaniciAdi}</span> isimli kullanıcının yetki talebini onaylıyorsunuz. Dilerseniz saatleri aşağıdan değiştirebilirsiniz.
+            </p>
+
+            <div className="space-y-4 mb-6">
+              <div>
+                <label className="block text-xs font-bold text-gray-500 uppercase tracking-wider mb-1">Başlangıç Zamanı</label>
+                <input 
+                  type="datetime-local" 
+                  // step="1" // Saniyeleri de göstermesi için
+                  value={onayModal.baslangic} 
+                  onChange={(e) => setOnayModal({...onayModal, baslangic: e.target.value})}
+                  className="w-full px-3 py-2.5 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition"
+                />
+              </div>
+              <div>
+                <label className="block text-xs font-bold text-gray-500 uppercase tracking-wider mb-1">Bitiş Zamanı</label>
+                <input 
+                  type="datetime-local" 
+                  // step="1" 
+                  value={onayModal.bitis} 
+                  onChange={(e) => setOnayModal({...onayModal, bitis: e.target.value})}
+                  className="w-full px-3 py-2.5 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition"
+                />
+              </div>
+            </div>
+
+            <div className="flex gap-3 justify-end">
+              <button onClick={modalKapat} className="px-4 py-2 bg-white border border-gray-300 text-gray-700 rounded-lg text-sm font-semibold hover:bg-gray-50 transition">
+                İptal
+              </button>
+              <button onClick={handleKesinOnay} className="px-4 py-2 bg-indigo-600 text-white rounded-lg text-sm font-semibold hover:bg-indigo-700 shadow-md shadow-indigo-200 transition">
+                Şifre Üret ve Onayla
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
     </div>
   );
 }

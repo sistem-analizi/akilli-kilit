@@ -6,17 +6,21 @@ export default function Sifreler() {
   const [sifreler, setSifreler] = useState([]);
   const [istatistik, setIstatistik] = useState({ toplam: 0, aktif: 0, bekleyen: 0 });
   
-  // sıralam için state
+  // Sıralama için state
   const [sortConfig, setSortConfig] = useState({ key: null, direction: 'asc' });
+
+  // FİLTRELEME VE ARAMA STATE'LERİ (Yeni Eklendi)
+  const [aramaMetni, setAramaMetni] = useState('');
+  const [filtreDurum, setFiltreDurum] = useState('Tümü');
+  const [filtreBaslangic, setFiltreBaslangic] = useState('');
+  const [filtreBitis, setFiltreBitis] = useState('');
 
   // SAYFALAMA STATE'LERİ
   const [mevcutSayfa, setMevcutSayfa] = useState(1);
   const kayitSayisi = 5; // Her sayfada kaç kayıt gösterilecek
 
-
   // Tarih ve saat karşılaştırması yapan yardımcı fonksiyon
   const durumHesapla = (baslangicStr, bitisStr) => {
-    // "2026-04-12 14:00" formatını JS Date objesine çeviriyoruz
     const baslangic = new Date(baslangicStr.replace(" ", "T"));
     const bitis = new Date(bitisStr.replace(" ", "T"));
     const suAn = new Date();
@@ -45,7 +49,7 @@ export default function Sifreler() {
           return { pin: key, ...sifreObj, durum };
         });
 
-        // Tarihe göre sırala (En yakın bitiş tarihli olan en üstte çıksın)
+        // Varsayılan: Tarihe göre sırala
         liste.sort((a, b) => new Date(a.Bitis.replace(" ", "T")) - new Date(b.Bitis.replace(" ", "T")));
 
         setSifreler(liste);
@@ -57,7 +61,6 @@ export default function Sifreler() {
     });
   }, []);
 
-  // Süresi dolan veya iptal edilmek istenen şifreyi veritabanından kalıcı silme
   const handleSifreIptal = async (pin) => {
     if (window.confirm("Bu PIN kodunu kalıcı olarak iptal etmek istediğinize emin misiniz?")) {
       try {
@@ -69,35 +72,56 @@ export default function Sifreler() {
     }
   };
 
-  // --- BAŞLIĞA TIKLAYINCA ÇALIŞAN SIRALAMA FONKSİYONU ---
   const handleSort = (key) => {
     let direction = 'asc';
     if (sortConfig.key === key && sortConfig.direction === 'asc') {
-      direction = 'desc'; // Zaten artansa, azalana çevir
+      direction = 'desc';
     }
     setSortConfig({ key, direction });
-    setMevcutSayfa(1);  // Sıralama değiştiğinde 1. sayfaya dön!
+    setMevcutSayfa(1);
   };
 
-  // Verileri sıralama konfigürasyonuna göre düzenliyoruz
-  const siraliSifreler = [...sifreler].sort((a, b) => {
+  // --- FİLTRELEME MANTIĞI (Yeni Eklendi) ---
+  const filtreleriTemizle = () => {
+    setAramaMetni('');
+    setFiltreDurum('Tümü');
+    setFiltreBaslangic('');
+    setFiltreBitis('');
+    setMevcutSayfa(1);
+  };
+
+  const filtrelenmisSifreler = sifreler.filter((sifre) => {
+    // 1. Arama Metni (İsim veya PIN)
+    const aramaKucuk = aramaMetni.toLowerCase();
+    const isimEslesmesi = sifre.KullaniciAdi?.toLowerCase().includes(aramaKucuk);
+    const pinEslesmesi = sifre.pin?.includes(aramaMetni);
+    const aramaUygun = aramaMetni === '' || isimEslesmesi || pinEslesmesi;
+
+    // 2. Durum Filtresi
+    const durumUygun = filtreDurum === 'Tümü' || sifre.durum.etiket === filtreDurum;
+
+    // 3. Tarih Filtreleri (Başlangıç Tarihine Göre)
+    const sifreTarihi = sifre.Baslangic ? sifre.Baslangic.split(' ')[0] : '';
+    const baslangicUygun = !filtreBaslangic || sifreTarihi >= filtreBaslangic;
+    const bitisUygun = !filtreBitis || sifreTarihi <= filtreBitis;
+
+    return aramaUygun && durumUygun && baslangicUygun && bitisUygun;
+  });
+
+  // --- SIRALAMA MANTIĞI (Filtrelenmiş Veri Üzerinden Çalışır) ---
+  const siraliSifreler = [...filtrelenmisSifreler].sort((a, b) => {
     if (!sortConfig.key) return 0;
 
     let aValue = a[sortConfig.key];
     let bValue = b[sortConfig.key];
 
-    // Durum objesi içindeki metne (etikete) göre sıralamak için özel şart
     if (sortConfig.key === 'durum') {
       aValue = a.durum.etiket;
       bValue = b.durum.etiket;
     }
 
-    if (aValue < bValue) {
-      return sortConfig.direction === 'asc' ? -1 : 1;
-    }
-    if (aValue > bValue) {
-      return sortConfig.direction === 'asc' ? 1 : -1;
-    }
+    if (aValue < bValue) return sortConfig.direction === 'asc' ? -1 : 1;
+    if (aValue > bValue) return sortConfig.direction === 'asc' ? 1 : -1;
     return 0;
   });
 
@@ -107,23 +131,22 @@ export default function Sifreler() {
   const gosterilecekSifreler = siraliSifreler.slice(ilkKayitIndeksi, sonKayitIndeksi);
   const toplamSayfa = Math.ceil(siraliSifreler.length / kayitSayisi);
 
-  // Sıralama İkonunu Çizen Yardımcı Bileşen
   const SortIcon = ({ columnKey }) => {
     if (sortConfig.key !== columnKey) {
-      return ( // Tıklanmamış nötr durum (Senin attığın resimdeki gibi ↕)
+      return (
         <svg className="w-4 h-4 text-gray-400 opacity-50" fill="none" stroke="currentColor" viewBox="0 0 24 24">
           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M8 9l4-4 4 4m0 6l-4 4-4-4"></path>
         </svg>
       );
     }
     if (sortConfig.direction === 'asc') {
-      return ( // Artan sıralama (↑)
+      return (
         <svg className="w-4 h-4 text-indigo-600 font-bold" fill="none" stroke="currentColor" viewBox="0 0 24 24">
           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="3" d="M5 15l7-7 7 7"></path>
         </svg>
       );
     }
-    return ( // Azalan sıralama (↓)
+    return (
       <svg className="w-4 h-4 text-indigo-600 font-bold" fill="none" stroke="currentColor" viewBox="0 0 24 24">
         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="3" d="M19 9l-7 7-7-7"></path>
       </svg>
@@ -153,53 +176,117 @@ export default function Sifreler() {
         </div>  
       </div>
 
+      {/* FİLTRELEME ÇUBUĞU (Yeni Eklendi) */}
+      <div className="bg-white p-4 rounded-xl shadow-sm border border-gray-100 mb-6 flex flex-col md:flex-row gap-4 items-end">
+        <div className="flex-1 w-full">
+          <label className="block text-xs font-semibold text-gray-500 uppercase tracking-wider mb-2">Arama</label>
+          <input 
+            type="text" 
+            placeholder="İsim veya PIN ara..." 
+            value={aramaMetni}
+            onChange={(e) => { setAramaMetni(e.target.value); setMevcutSayfa(1); }}
+            className="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 bg-gray-50"
+          />
+        </div>
+
+        <div className="flex-1 w-full">
+          <label className="block text-xs font-semibold text-gray-500 uppercase tracking-wider mb-2">Duruma Göre</label>
+          <select 
+            value={filtreDurum}
+            onChange={(e) => { setFiltreDurum(e.target.value); setMevcutSayfa(1); }}
+            className="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 bg-gray-50"
+          >
+            <option value="Tümü">Tümü (Filtresiz)</option>
+            <option value="Şu An Aktif">Şu An Aktif</option>
+            <option value="Bekliyor">Bekliyor</option>
+            <option value="Süresi Doldu">Süresi Doldu</option>
+          </select>
+        </div>
+
+        <div className="flex-1 w-full">
+          <label className="block text-xs font-semibold text-gray-500 uppercase tracking-wider mb-2">Başlangıç Tarihi (İtibaren)</label>
+          <input 
+            type="date" 
+            value={filtreBaslangic}
+            onChange={(e) => { setFiltreBaslangic(e.target.value); setMevcutSayfa(1); }}
+            className="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 bg-gray-50"
+          />
+        </div>
+
+        <div className="flex-1 w-full">
+          <label className="block text-xs font-semibold text-gray-500 uppercase tracking-wider mb-2">Başlangıç Tarihi (Kadar)</label>
+          <input 
+            type="date" 
+            value={filtreBitis}
+            onChange={(e) => { setFiltreBitis(e.target.value); setMevcutSayfa(1); }}
+            className="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 bg-gray-50"
+          />
+        </div>
+
+        <div className="w-full md:w-auto flex justify-end">
+          <button 
+            onClick={filtreleriTemizle}
+            className="px-4 py-2 bg-white border border-gray-300 text-gray-600 rounded-lg text-sm font-semibold hover:bg-gray-100 transition whitespace-nowrap"
+          >
+            Filtreleri Temizle
+          </button>
+        </div>
+      </div>
+
+      {/* TABLO */}
       <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-6 overflow-x-auto">
-        <h3 className="text-lg font-bold text-gray-800 mb-4">Tüm PIN Kodları</h3>
+        <div className="flex justify-between items-center mb-4">
+          <h3 className="text-lg font-bold text-gray-800">Tüm PIN Kodları</h3>
+          <span className="text-sm text-gray-500 font-medium">Listelenen: {filtrelenmisSifreler.length} kayıt</span>
+        </div>
+        
         <table className="w-full text-left border-collapse">
           <thead>
-            <tr className="border-b text-gray-500 text-sm">
-              
-              {/* TIKLANABİLİR BAŞLIKLAR (Sıralama İşlemi) */}
-              <th className="py-3 px-2 cursor-pointer hover:bg-gray-50 transition select-none" onClick={() => handleSort('pin')}>
+            <tr className="border-b bg-gray-50 text-gray-600 text-sm">
+              <th className="py-3 px-4 rounded-tl-lg cursor-pointer hover:bg-gray-100 transition select-none" onClick={() => handleSort('pin')}>
                 <div className="flex items-center gap-2">PIN Kodu <SortIcon columnKey="pin" /></div>
               </th>
-              
-              <th className="py-3 px-2 cursor-pointer hover:bg-gray-50 transition select-none" onClick={() => handleSort('KullaniciAdi')}>
+              <th className="py-3 px-4 cursor-pointer hover:bg-gray-100 transition select-none" onClick={() => handleSort('KullaniciAdi')}>
                 <div className="flex items-center gap-2">Kullanıcı <SortIcon columnKey="KullaniciAdi" /></div>
               </th>
-              
-              <th className="py-3 px-2 cursor-pointer hover:bg-gray-50 transition select-none" onClick={() => handleSort('Baslangic')}>
+              <th className="py-3 px-4 cursor-pointer hover:bg-gray-100 transition select-none" onClick={() => handleSort('Baslangic')}>
                 <div className="flex items-center gap-2">Başlangıç <SortIcon columnKey="Baslangic" /></div>
               </th>
-              
-              <th className="py-3 px-2 cursor-pointer hover:bg-gray-50 transition select-none" onClick={() => handleSort('Bitis')}>
+              <th className="py-3 px-4 cursor-pointer hover:bg-gray-100 transition select-none" onClick={() => handleSort('Bitis')}>
                 <div className="flex items-center gap-2">Bitiş <SortIcon columnKey="Bitis" /></div>
               </th>
-              
-              <th className="py-3 px-2 cursor-pointer hover:bg-gray-50 transition select-none" onClick={() => handleSort('durum')}>
+              <th className="py-3 px-4 cursor-pointer hover:bg-gray-100 transition select-none" onClick={() => handleSort('durum')}>
                 <div className="flex items-center gap-2">Durum <SortIcon columnKey="durum" /></div>
               </th>
-              
-              <th className="py-3 px-2 text-right">İşlem</th>
+              <th className="py-3 px-4 rounded-tr-lg text-right">İşlem</th>
             </tr>
           </thead>
           <tbody>
             {siraliSifreler.length === 0 ? (
-              <tr><td colSpan="6" className="text-center py-8 text-gray-500">Sistemde kayıtlı şifre bulunmuyor.</td></tr>
+              <tr>
+                <td colSpan="6" className="text-center py-12 text-gray-500">
+                  <div className="flex flex-col items-center justify-center">
+                    <svg xmlns="http://www.w3.org/2000/svg" className="h-10 w-10 text-gray-300 mb-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                    </svg>
+                    <span>{sifreler.length === 0 ? "Sistemde kayıtlı şifre bulunmuyor." : "Filtreleme kriterlerinize uyan şifre bulunamadı."}</span>
+                  </div>
+                </td>
+              </tr>
             ) : (
               gosterilecekSifreler.map((sifre) => (
-                <tr key={sifre.pin} className="border-b hover:bg-gray-50">
-                  <td className="py-4 px-2 font-mono font-bold text-indigo-600">{sifre.pin}</td>
-                  <td className="py-4 px-2 font-medium text-gray-800">{sifre.KullaniciAdi}</td>
-                  <td className="py-4 px-2 text-gray-600 text-sm">{sifre.Baslangic}</td>
-                  <td className="py-4 px-2 text-gray-600 text-sm">{sifre.Bitis}</td>
-                  <td className="py-4 px-2">
-                    <span className={`px-3 py-1 rounded-full text-xs font-bold ${sifre.durum.renk}`}>
+                <tr key={sifre.pin} className="border-b border-gray-50 hover:bg-gray-50/50 transition">
+                  <td className="py-4 px-4 font-mono font-bold text-indigo-600">{sifre.pin}</td>
+                  <td className="py-4 px-4 font-semibold text-gray-800">{sifre.KullaniciAdi}</td>
+                  <td className="py-4 px-4 text-gray-600 text-sm">{sifre.Baslangic}</td>
+                  <td className="py-4 px-4 text-gray-600 text-sm">{sifre.Bitis}</td>
+                  <td className="py-4 px-4">
+                    <span className={`px-3 py-1 rounded-full text-xs font-bold border ${sifre.durum.renk.replace('text', 'border').replace('100', '200')} ${sifre.durum.renk}`}>
                       {sifre.durum.etiket}
                     </span>
                   </td>
-                  <td className="py-4 px-2 text-right">
-                    <button onClick={() => handleSifreIptal(sifre.pin)} className="text-red-500 hover:text-red-700 text-sm font-semibold hover:underline">
+                  <td className="py-4 px-4 text-right">
+                    <button onClick={() => handleSifreIptal(sifre.pin)} className="text-red-500 hover:text-red-700 text-sm font-semibold hover:underline bg-red-50 px-3 py-1 rounded-lg transition">
                       İptal Et
                     </button>
                   </td>
@@ -215,9 +302,9 @@ export default function Sifreler() {
           <div className="hidden sm:flex sm:flex-1 sm:items-center sm:justify-between">
             <div>
               <p className="text-sm text-gray-700">
-                Toplam <span className="font-medium">{siraliSifreler.length}</span> kayıttan{' '}
+                Toplam <span className="font-medium">{filtrelenmisSifreler.length}</span> kayıttan{' '}
                 <span className="font-medium">{ilkKayitIndeksi + 1}</span> -{' '}
-                <span className="font-medium">{Math.min(sonKayitIndeksi, siraliSifreler.length)}</span> arası gösteriliyor.
+                <span className="font-medium">{Math.min(sonKayitIndeksi, filtrelenmisSifreler.length)}</span> arası gösteriliyor.
               </p>
             </div>
             <div>
@@ -233,7 +320,6 @@ export default function Sifreler() {
                   </svg>
                 </button>
                 
-                {/* Sayfa Numaraları */}
                 {[...Array(toplamSayfa)].map((_, index) => (
                   <button
                     key={index}
@@ -258,8 +344,7 @@ export default function Sifreler() {
             </div>
           </div>
         </div>
-      )}
-
+        )}
       </div>
     </div>
   );

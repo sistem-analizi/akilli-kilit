@@ -14,10 +14,15 @@ export default function Dashboard() {
 
   const [sonLoglar, setSonLoglar] = useState([]);
   
-  // CİHAZ KONTROL STATE'LERİ (Yeni Eklendi)
+  // CİHAZ KONTROL STATE'LERİ
   const [cihazDurumu, setCihazDurumu] = useState({ kilitli: false, mesaj: '' });
   const [ekranMesaji, setEkranMesaji] = useState('');
   const [islemMesaji, setIslemMesaji] = useState({ tip: '', metin: '' });
+
+  // --- ZAMANLI KİLİT STATE'LERİ (Yeni Eklendi) ---
+  const [zamanliKilit, setZamanliKilit] = useState(false);
+  const [kilitBaslangic, setKilitBaslangic] = useState('');
+  const [kilitBitis, setKilitBitis] = useState('');
 
   useEffect(() => {
     const kilitSistemiRef = ref(db, 'KilitSistemi');
@@ -66,19 +71,23 @@ export default function Dashboard() {
         logListesi = logListesi.slice(0, 5);
       }
 
-      // 2. Cihaz (Ekran) Durumunu Çekme (Yeni Eklendi)
+      // 2. Cihaz (Ekran) Durumunu Çekme
       if (data.CihazDurumu) {
         setCihazDurumu({
           kilitli: data.CihazDurumu.Kilitli || false,
           mesaj: data.CihazDurumu.Mesaj || ''
         });
-        // Eğer cihaz kilitliyse ve input boşsa, veritabanındaki mesajı inputa doldur
+        
+        // Veritabanındaki zamanlı ayarları çek
+        setZamanliKilit(data.CihazDurumu.Zamanli || false);
+        if (data.CihazDurumu.Baslangic) setKilitBaslangic(data.CihazDurumu.Baslangic.replace(" ", "T").substring(0, 16));
+        if (data.CihazDurumu.Bitis) setKilitBitis(data.CihazDurumu.Bitis.replace(" ", "T").substring(0, 16));
+
         if (data.CihazDurumu.Kilitli && !ekranMesaji) {
           setEkranMesaji(data.CihazDurumu.Mesaj);
         }
       }
 
-      // State Güncellemeleri
       setIstatistikler({
         toplamKullanici: toplamKullaniciSayisi,
         aktifSifreler: aktifSifreSayisi,
@@ -90,7 +99,7 @@ export default function Dashboard() {
     });
   }, []);
 
-  // CİHAZ KİLİTLEME/AÇMA FONKSİYONU (Yeni Eklendi)
+  // CİHAZ KİLİTLEME/AÇMA FONKSİYONU
   const handleCihazKilitle = async (kilitDurumu) => {
     try {
       if (kilitDurumu && !ekranMesaji.trim()) {
@@ -99,18 +108,37 @@ export default function Dashboard() {
         return;
       }
 
-      const gidenMesaj = kilitDurumu ? ekranMesaji : 'Sistem Aktif'; // Kilidi açınca varsayılan mesaja dön
+      // Zamanlı kilit seçildiyse tarihleri kontrol et
+      if (kilitDurumu && zamanliKilit) {
+        if (!kilitBaslangic || !kilitBitis) {
+          setIslemMesaji({ tip: 'hata', metin: 'Zamanlı kilit için başlangıç ve bitiş zamanını seçmelisiniz!' });
+          setTimeout(() => setIslemMesaji({ tip: '', metin: '' }), 3000);
+          return;
+        }
+      }
+
+      const gidenMesaj = kilitDurumu ? ekranMesaji : 'Sistem Aktif'; 
+      const dbBaslangic = (kilitDurumu && zamanliKilit) ? kilitBaslangic.replace("T", " ") + ":00" : "";
+      const dbBitis = (kilitDurumu && zamanliKilit) ? kilitBitis.replace("T", " ") + ":00" : "";
       
       await update(ref(db, 'KilitSistemi/CihazDurumu'), {
         Kilitli: kilitDurumu,
+        Zamanli: kilitDurumu ? zamanliKilit : false,
+        Baslangic: dbBaslangic,
+        Bitis: dbBitis,
         Mesaj: gidenMesaj
       });
 
-      if (!kilitDurumu) setEkranMesaji(''); // Kilidi açınca inputu temizle
+      if (!kilitDurumu) {
+        setEkranMesaji('');
+        setZamanliKilit(false);
+        setKilitBaslangic('');
+        setKilitBitis('');
+      }
 
       setIslemMesaji({ 
         tip: 'basari', 
-        metin: kilitDurumu ? 'Sistem kilitlendi ve mesaj ekrana gönderildi.' : 'Sistem kilidi açıldı, normale dönüldü.' 
+        metin: kilitDurumu ? (zamanliKilit ? 'Sistem belirtilen saatlerde kilitlenmek üzere programlandı.' : 'Sistem anında kilitlendi.') : 'Sistem kilidi açıldı, normale dönüldü.' 
       });
       setTimeout(() => setIslemMesaji({ tip: '', metin: '' }), 3000);
 
@@ -122,13 +150,12 @@ export default function Dashboard() {
 
   return (
     <div className="space-y-6">
-      
       <div>
         <h2 className="text-2xl font-bold text-gray-800">Sistem Özeti</h2>
         <p className="text-gray-500 text-sm mt-1">Akıllı Kapı Kilit Sisteminin anlık durum raporu.</p>
       </div>
 
-      {/* İSTATİSTİK KARTLARI */}
+      {/* İSTATİSTİK KARTLARI (Öncekiyle Aynı) */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
         <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-6 flex items-center gap-4">
           <div className="p-4 bg-indigo-50 text-indigo-600 rounded-lg">
@@ -136,7 +163,6 @@ export default function Dashboard() {
           </div>
           <div><p className="text-sm font-medium text-gray-500">Aktif Şifreler</p><p className="text-2xl font-bold text-gray-800">{istatistikler.aktifSifreler}</p></div>
         </div>
-
         <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-6 flex items-center gap-4">
           <div className="p-4 bg-yellow-50 text-yellow-600 rounded-lg relative">
             {istatistikler.bekleyenIstekler > 0 && (
@@ -149,14 +175,12 @@ export default function Dashboard() {
           </div>
           <div><p className="text-sm font-medium text-gray-500">Bekleyen İstekler</p><p className="text-2xl font-bold text-gray-800">{istatistikler.bekleyenIstekler}</p></div>
         </div>
-
         <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-6 flex items-center gap-4">
           <div className="p-4 bg-green-50 text-green-600 rounded-lg">
             <svg className="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
           </div>
           <div><p className="text-sm font-medium text-gray-500">Bugün Girişler</p><p className="text-2xl font-bold text-gray-800">{istatistikler.bugunkuGirisler}</p></div>
         </div>
-
         <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-6 flex items-center gap-4">
           <div className="p-4 bg-red-50 text-red-600 rounded-lg">
             <svg className="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"></path></svg>
@@ -165,7 +189,6 @@ export default function Dashboard() {
         </div>
       </div>
 
-      {/* İKİNCİ SATIR: Cihaz Kontrolü ve Son Loglar */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         
         {/* LOGLAR TABLOSU */}
@@ -208,13 +231,19 @@ export default function Dashboard() {
         </div>
 
         {/* YENİ MODÜL: SİSTEM & EKRAN KONTROLÜ */}
-        <div className={`rounded-xl shadow-sm p-6 border transition duration-300 ${cihazDurumu.kilitli ? 'bg-red-50 border-red-200' : 'bg-white border-gray-100'}`}>
+        <div className={`rounded-xl shadow-sm p-6 border transition duration-300 ${cihazDurumu.kilitli && !zamanliKilit ? 'bg-red-50 border-red-200' : (cihazDurumu.kilitli && zamanliKilit ? 'bg-orange-50 border-orange-200' : 'bg-white border-gray-100')}`}>
           <div className="flex items-center justify-between mb-4">
-            <h3 className={`text-lg font-bold ${cihazDurumu.kilitli ? 'text-red-800' : 'text-gray-800'}`}>Cihaz Kontrolü</h3>
+            <h3 className={`text-lg font-bold ${cihazDurumu.kilitli ? (zamanliKilit ? 'text-orange-800' : 'text-red-800') : 'text-gray-800'}`}>Cihaz Kontrolü</h3>
             {cihazDurumu.kilitli ? (
-              <span className="flex items-center text-xs font-bold text-red-600 bg-red-100 px-2 py-1 rounded-full animate-pulse">
-                <span className="w-2 h-2 bg-red-600 rounded-full mr-1"></span> KİLİTLİ
-              </span>
+              zamanliKilit ? (
+                <span className="flex items-center text-xs font-bold text-orange-600 bg-orange-100 px-2 py-1 rounded-full animate-pulse">
+                  <span className="w-2 h-2 bg-orange-600 rounded-full mr-1"></span> PLANLANDI
+                </span>
+              ) : (
+                <span className="flex items-center text-xs font-bold text-red-600 bg-red-100 px-2 py-1 rounded-full animate-pulse">
+                  <span className="w-2 h-2 bg-red-600 rounded-full mr-1"></span> KİLİTLİ
+                </span>
+              )
             ) : (
               <span className="flex items-center text-xs font-bold text-green-600 bg-green-100 px-2 py-1 rounded-full">
                 <span className="w-2 h-2 bg-green-600 rounded-full mr-1"></span> AKTİF
@@ -223,7 +252,7 @@ export default function Dashboard() {
           </div>
           
           <p className="text-sm text-gray-600 mb-6">
-            Acil durumlarda veya sınavlarda kapıyı tamamen kilitleyebilir ve Nextion ekrana mesaj gönderebilirsiniz.
+            Sistemi anında kilitleyebilir veya belirli bir zaman aralığı için programlayabilirsiniz.
           </p>
 
           {islemMesaji.metin && (
@@ -240,10 +269,52 @@ export default function Dashboard() {
                 placeholder="Örn: Sınav Var, Lütfen Girmeyiniz!"
                 value={ekranMesaji}
                 onChange={(e) => setEkranMesaji(e.target.value)}
-                disabled={cihazDurumu.kilitli} // Kilitliyken mesaj değiştirilemesin
+                disabled={cihazDurumu.kilitli}
                 className={`w-full px-3 py-2 border rounded-lg text-sm focus:outline-none focus:ring-2 ${cihazDurumu.kilitli ? 'bg-gray-100 text-gray-500 border-gray-200 cursor-not-allowed' : 'bg-white border-gray-200 focus:ring-indigo-500'}`}
               />
             </div>
+
+            {/* ZAMANLI KİLİT CHECKBOX */}
+            {!cihazDurumu.kilitli && (
+              <div className="flex items-center gap-2 mb-2 pt-2 border-t">
+                <input 
+                  type="checkbox" 
+                  id="zamanli" 
+                  checked={zamanliKilit} 
+                  onChange={(e) => setZamanliKilit(e.target.checked)} 
+                  className="w-4 h-4 text-indigo-600 rounded border-gray-300 focus:ring-indigo-500"
+                />
+                <label htmlFor="zamanli" className="text-sm font-semibold text-gray-700 select-none cursor-pointer">
+                  Planlı (Zamanlı) Kilitleme Yap
+                </label>
+              </div>
+            )}
+
+            {/* ZAMAN SEÇİM ALANLARI */}
+            {(zamanliKilit || (cihazDurumu.kilitli && zamanliKilit)) && (
+              <div className="grid grid-cols-2 gap-3 pb-3">
+                <div>
+                  <label className="block text-[10px] font-bold text-gray-500 uppercase mb-1">Başlangıç</label>
+                  <input 
+                    type="datetime-local" 
+                    value={kilitBaslangic} 
+                    onChange={(e)=>setKilitBaslangic(e.target.value)} 
+                    disabled={cihazDurumu.kilitli} 
+                    className="w-full px-2 py-1.5 border border-gray-300 rounded text-xs" 
+                  />
+                </div>
+                <div>
+                  <label className="block text-[10px] font-bold text-gray-500 uppercase mb-1">Bitiş</label>
+                  <input 
+                    type="datetime-local" 
+                    value={kilitBitis} 
+                    onChange={(e)=>setKilitBitis(e.target.value)} 
+                    disabled={cihazDurumu.kilitli} 
+                    className="w-full px-2 py-1.5 border border-gray-300 rounded text-xs" 
+                  />
+                </div>
+              </div>
+            )}
 
             {cihazDurumu.kilitli ? (
               <button 
@@ -256,10 +327,10 @@ export default function Dashboard() {
             ) : (
               <button 
                 onClick={() => handleCihazKilitle(true)}
-                className="w-full bg-red-600 hover:bg-red-700 text-white font-medium py-2.5 rounded-lg transition shadow-md shadow-red-500/30 flex justify-center items-center gap-2"
+                className={`w-full text-white font-medium py-2.5 rounded-lg transition shadow-md flex justify-center items-center gap-2 ${zamanliKilit ? 'bg-orange-600 hover:bg-orange-700 shadow-orange-500/30' : 'bg-red-600 hover:bg-red-700 shadow-red-500/30'}`}
               >
                 <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2z"></path></svg>
-                Sistemi Kilitle & Mesajı Gönder
+                {zamanliKilit ? 'Planlı Kilidi Başlat' : 'Sistemi Kilitle & Mesaj Gönder'}
               </button>
             )}
           </div>

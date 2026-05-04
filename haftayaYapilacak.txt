@@ -5,7 +5,7 @@
 Karanlık Tema eklenecek
 + Bir kullanıcıya 1'den fazla şifre atanamaz validasyonu
 + Admin, web panelini kullanarak nextion ekrana bir mesaj yazdırabilir.( Ekran kilitlensin ve giriş yapılamasın ) 
-nextion ekranların arayüzlerine stil eklenecek
++ nextion ekranların arayüzlerine stil eklenecek
 Ufak tefek Admin panel css değişiklikleri
 Parçalar ürün haline getirilecek
 mobil yapılacak
@@ -17,12 +17,14 @@ mobil yapılacak
 
 
 
-şifreler kısmına loglarda ki gibi filtre
-gelen istekler kısmında admin onayladıktan sonra saati vesaire değiştirmek isterse değiştirebilir
-web ile nextion'a mesaj yazdırıp keypad'i kilitleme kısmına saat aralığı girilebilir. Yani 8'den ekranın kilidi açılacak, cihaz durumundaki kilit otomatik false olur
++ şifreler kısmına loglarda ki gibi filtre
++ gelen istekler kısmında admin onayladıktan sonra saati vesaire değiştirmek isterse değiştirebilir
++ web ile nextion'a mesaj yazdırıp keypad'i kilitleme kısmına saat aralığı girilebilir. Yani 8'den ekran kilitlenecek 10'da kilidi açılacak, kilit otomatik false olur
 buzzer ses kıs.
 
+Admin Web panel kısmının mobil halini yap.
 
 
 
-altinkaya devre kutulari
+
++ altinkaya devre kutulari
