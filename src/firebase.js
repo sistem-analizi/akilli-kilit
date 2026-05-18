@@ -3,13 +3,13 @@ import { getDatabase } from "firebase/database";
 
 // konfigirasyonlar, firebase sitesinde var
 const firebaseConfig = {
-  apiKey: "AIzaSyBf1PyJnLqu2T8X8tw3iHSMxEp3yZJmwWA",
-  authDomain: "deneme-66ca9.firebaseapp.com",
-  databaseURL: "https://deneme-66ca9-default-rtdb.europe-west1.firebasedatabase.app",
-  projectId: "deneme-66ca9",
-  storageBucket: "deneme-66ca9.firebasestorage.app",
-  messagingSenderId: "622238134482",
-  appId: "1:622238134482:web:af16bf14307e93e8583d0b"
+  apiKey: import.meta.env.VITE_FIREBASE_API_KEY,
+  authDomain: import.meta.env.VITE_FIREBASE_AUTH_DOMAIN,
+  databaseURL: import.meta.env.VITE_FIREBASE_DATABASE_URL,
+  projectId: import.meta.env.VITE_FIREBASE_PROJECT_ID,
+  storageBucket: import.meta.env.VITE_FIREBASE_STORAGE_BUCKET,
+  messagingSenderId: import.meta.env.VITE_FIREBASE_MESSAGING_SENDER_ID,
+  appId: import.meta.env.VITE_FIREBASE_APP_ID
 };
 
 
