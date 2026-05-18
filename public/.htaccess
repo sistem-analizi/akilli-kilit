@@ -1,0 +1,11 @@
+<IfModule mod_rewrite.c>
+    RewriteEngine On
+
+    # Var olan dosya veya klasörler için rewrite yapma
+    RewriteCond %{REQUEST_FILENAME} -f [OR]
+    RewriteCond %{REQUEST_FILENAME} -d
+    RewriteRule ^ - [L]
+
+    # Diğer her şey için index.html'e fallback (relative path, subpath uyumlu)
+    RewriteRule . index.html [L]
+</IfModule>
