@@ -6,11 +6,15 @@ import Loglar from './pages/Loglar';
 import Kullanicilar from './pages/Kullanicilar';
 import Sifreler from './pages/Sifreler';
 
+// Vite, vite.config.js'deki `base` değerini import.meta.env.BASE_URL'e koyar.
+// React Router basename'i sondaki slash'sız ister.
+const BASENAME = import.meta.env.BASE_URL.replace(/\/$/, '');
+
 function App() {
   // --- KOYU TEMA (DARK MODE) STATE VE MANTIĞI ---
   const [darkTema, setDarkTema] = useState(() => {
     if (typeof window !== 'undefined') {
-      return localStorage.getItem('tema') === 'dark' || 
+      return localStorage.getItem('tema') === 'dark' ||
         (!('tema' in localStorage) && window.matchMedia('(prefers-color-scheme: dark)').matches);
     }
     return false;
@@ -28,10 +32,10 @@ function App() {
   }, [darkTema]);
 
   return (
-    <Router>
+    <Router basename={BASENAME}>
       {/* Ana kapsayıcı: Koyu temada arka planı koyu gri yapıyoruz */}
       <div className="flex h-screen bg-gray-100 dark:bg-gray-900 transition-colors duration-300">
-        
+
         {/* Sol Menü (Sidebar) */}
         <div className="w-64 bg-white dark:bg-gray-800 shadow-lg transition-colors duration-300">
           <div className="p-6">
@@ -40,12 +44,12 @@ function App() {
           </div>
           <nav className="mt-6 flex flex-col gap-2 px-4">
            {/* NavLink kullanımı: 'isActive' true ise aktif stili, false ise normal stili uygular */}
-            <NavLink 
-              to="/" 
-              className={({ isActive }) => 
+            <NavLink
+              to="/"
+              className={({ isActive }) =>
                 `px-4 py-3 rounded-lg font-medium transition ${
-                  isActive 
-                  ? 'bg-indigo-50 dark:bg-indigo-900/50 text-indigo-700 dark:text-indigo-300' 
+                  isActive
+                  ? 'bg-indigo-50 dark:bg-indigo-900/50 text-indigo-700 dark:text-indigo-300'
                   : 'text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700'
                 }`
               }
@@ -53,12 +57,12 @@ function App() {
               Dashboard
             </NavLink>
 
-            <NavLink 
-              to="/istekler" 
-              className={({ isActive }) => 
+            <NavLink
+              to="/istekler"
+              className={({ isActive }) =>
                 `px-4 py-3 rounded-lg font-medium transition ${
-                  isActive 
-                  ? 'bg-indigo-50 dark:bg-indigo-900/50 text-indigo-700 dark:text-indigo-300' 
+                  isActive
+                  ? 'bg-indigo-50 dark:bg-indigo-900/50 text-indigo-700 dark:text-indigo-300'
                   : 'text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700'
                 }`
               }
@@ -66,12 +70,12 @@ function App() {
               Gelen İstekler
             </NavLink>
 
-            <NavLink 
-              to="/loglar" 
-              className={({ isActive }) => 
+            <NavLink
+              to="/loglar"
+              className={({ isActive }) =>
                 `px-4 py-3 rounded-lg font-medium transition ${
-                  isActive 
-                  ? 'bg-indigo-50 dark:bg-indigo-900/50 text-indigo-700 dark:text-indigo-300' 
+                  isActive
+                  ? 'bg-indigo-50 dark:bg-indigo-900/50 text-indigo-700 dark:text-indigo-300'
                   : 'text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700'
                 }`
               }
@@ -79,12 +83,12 @@ function App() {
               Log Kayıtları
             </NavLink>
 
-            <NavLink 
-              to="/kullanicilar" 
-              className={({ isActive }) => 
+            <NavLink
+              to="/kullanicilar"
+              className={({ isActive }) =>
                 `px-4 py-3 rounded-lg font-medium transition ${
-                  isActive 
-                  ? 'bg-indigo-50 dark:bg-indigo-900/50 text-indigo-700 dark:text-indigo-300' 
+                  isActive
+                  ? 'bg-indigo-50 dark:bg-indigo-900/50 text-indigo-700 dark:text-indigo-300'
                   : 'text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700'
                 }`
               }
@@ -92,12 +96,12 @@ function App() {
               Kullanıcılar
             </NavLink>
 
-            <NavLink 
-              to="/sifreler" 
-              className={({ isActive }) => 
+            <NavLink
+              to="/sifreler"
+              className={({ isActive }) =>
                 `px-4 py-3 rounded-lg font-medium transition ${
-                  isActive 
-                  ? 'bg-indigo-50 dark:bg-indigo-900/50 text-indigo-700 dark:text-indigo-300' 
+                  isActive
+                  ? 'bg-indigo-50 dark:bg-indigo-900/50 text-indigo-700 dark:text-indigo-300'
                   : 'text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700'
                 }`
               }
@@ -112,12 +116,12 @@ function App() {
           {/* Header */}
           <header className="bg-white dark:bg-gray-800 shadow-sm px-8 py-4 flex items-center justify-between transition-colors duration-300">
             <div className="flex-1"></div> {/* Ortalamak için boş div */}
-            
+
             <h1 className="text-xl font-semibold text-gray-800 dark:text-white">Hoş Geldin, Admin</h1>
-            
+
             <div className="flex-1 flex justify-end">
               {/* TEMA DEĞİŞTİRME BUTONU */}
-              <button 
+              <button
                 onClick={() => setDarkTema(!darkTema)}
                 className="p-2 rounded-lg bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-yellow-400 hover:bg-gray-200 dark:hover:bg-gray-600 transition"
                 title={darkTema ? "Açık Temaya Geç" : "Koyu Temaya Geç"}
@@ -132,7 +136,7 @@ function App() {
               </button>
             </div>
           </header>
-          
+
           <main className="p-8">
             <Routes>
               <Route path="/" element={<Dashboard />} />
