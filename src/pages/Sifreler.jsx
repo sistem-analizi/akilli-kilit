@@ -226,122 +226,149 @@ export default function Sifreler() {
         <div className="w-full md:w-auto flex justify-end">
           <button 
             onClick={filtreleriTemizle}
-            className="px-4 py-2 bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 text-gray-600 dark:text-gray-200 rounded-lg text-sm font-semibold hover:bg-gray-100 dark:hover:bg-gray-600 transition whitespace-nowrap"
+            className="w-full md:w-auto px-4 py-2 bg-gray-100 dark:bg-gray-700 border border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-200 rounded-lg text-sm font-semibold hover:bg-gray-200 dark:hover:bg-gray-600 transition whitespace-nowrap"
           >
             Filtreleri Temizle
           </button>
         </div>
       </div>
 
-      {/* TABLO */}
-      <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-100 dark:border-gray-700 p-6 overflow-x-auto transition-colors">
+      {/* TABLO / MOBİLDE KART YAPISI */}
+      <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-100 dark:border-gray-700 p-6 transition-colors">
         <div className="flex justify-between items-center mb-4">
           <h3 className="text-lg font-bold text-gray-800 dark:text-white">Tüm PIN Kodları</h3>
           <span className="text-sm text-gray-500 dark:text-gray-400 font-medium">Listelenen: {filtrelenmisSifreler.length} kayıt</span>
         </div>
         
-        <table className="w-full text-left border-collapse">
-          <thead>
-            <tr className="border-b border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-800/80 text-gray-600 dark:text-gray-400 text-sm transition-colors">
-              <th className="py-3 px-4 rounded-tl-lg cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-700 transition select-none" onClick={() => handleSort('pin')}>
-                <div className="flex items-center gap-2">PIN Kodu <SortIcon columnKey="pin" /></div>
-              </th>
-              <th className="py-3 px-4 cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-700 transition select-none" onClick={() => handleSort('KullaniciAdi')}>
-                <div className="flex items-center gap-2">Kullanıcı <SortIcon columnKey="KullaniciAdi" /></div>
-              </th>
-              <th className="py-3 px-4 cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-700 transition select-none" onClick={() => handleSort('Baslangic')}>
-                <div className="flex items-center gap-2">Başlangıç <SortIcon columnKey="Baslangic" /></div>
-              </th>
-              <th className="py-3 px-4 cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-700 transition select-none" onClick={() => handleSort('Bitis')}>
-                <div className="flex items-center gap-2">Bitiş <SortIcon columnKey="Bitis" /></div>
-              </th>
-              <th className="py-3 px-4 cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-700 transition select-none" onClick={() => handleSort('durum')}>
-                <div className="flex items-center gap-2">Durum <SortIcon columnKey="durum" /></div>
-              </th>
-              <th className="py-3 px-4 rounded-tr-lg text-right">İşlem</th>
-            </tr>
-          </thead>
-          <tbody>
-            {siraliSifreler.length === 0 ? (
-              <tr>
-                <td colSpan="6" className="text-center py-12 text-gray-500 dark:text-gray-400">
-                  <div className="flex flex-col items-center justify-center">
-                    <svg xmlns="http://www.w3.org/2000/svg" className="h-10 w-10 text-gray-300 dark:text-gray-600 mb-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
-                    </svg>
-                    <span>{sifreler.length === 0 ? "Sistemde kayıtlı şifre bulunmuyor." : "Filtreleme kriterlerinize uyan şifre bulunamadı."}</span>
-                  </div>
-                </td>
+        <div className="w-full">
+          <table className="w-full text-left block md:table">
+            
+            <thead className="hidden md:table-header-group">
+              <tr className="border-b border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-800/80 text-gray-600 dark:text-gray-400 text-sm transition-colors">
+                <th className="py-3 px-4 rounded-tl-lg cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-700 transition select-none" onClick={() => handleSort('pin')}>
+                  <div className="flex items-center gap-2">PIN Kodu <SortIcon columnKey="pin" /></div>
+                </th>
+                <th className="py-3 px-4 cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-700 transition select-none" onClick={() => handleSort('KullaniciAdi')}>
+                  <div className="flex items-center gap-2">Kullanıcı <SortIcon columnKey="KullaniciAdi" /></div>
+                </th>
+                <th className="py-3 px-4 cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-700 transition select-none" onClick={() => handleSort('Baslangic')}>
+                  <div className="flex items-center gap-2">Başlangıç <SortIcon columnKey="Baslangic" /></div>
+                </th>
+                <th className="py-3 px-4 cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-700 transition select-none" onClick={() => handleSort('Bitis')}>
+                  <div className="flex items-center gap-2">Bitiş <SortIcon columnKey="Bitis" /></div>
+                </th>
+                <th className="py-3 px-4 cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-700 transition select-none" onClick={() => handleSort('durum')}>
+                  <div className="flex items-center gap-2">Durum <SortIcon columnKey="durum" /></div>
+                </th>
+                <th className="py-3 px-4 rounded-tr-lg text-right">İşlem</th>
               </tr>
-            ) : (
-              gosterilecekSifreler.map((sifre) => (
-                <tr key={sifre.pin} className="border-b border-gray-50 dark:border-gray-700/50 hover:bg-gray-50/50 dark:hover:bg-gray-700/50 transition-colors">
-                  <td className="py-4 px-4 font-mono font-bold text-indigo-600 dark:text-indigo-400">{sifre.pin}</td>
-                  <td className="py-4 px-4 font-semibold text-gray-800 dark:text-white">{sifre.KullaniciAdi}</td>
-                  <td className="py-4 px-4 text-gray-600 dark:text-gray-400 text-sm">{sifre.Baslangic}</td>
-                  <td className="py-4 px-4 text-gray-600 dark:text-gray-400 text-sm">{sifre.Bitis}</td>
-                  <td className="py-4 px-4">
-                    <span className={`px-3 py-1 rounded-full text-xs font-bold border ${sifre.durum.renk.replace('text', 'border').replace('100', '200')} dark:bg-opacity-20 ${sifre.durum.renk}`}>
-                      {sifre.durum.etiket}
-                    </span>
-                  </td>
-                  <td className="py-4 px-4 text-right">
-                    <button onClick={() => handleSifreIptal(sifre.pin)} className="text-red-500 dark:text-red-400 hover:text-red-700 dark:hover:text-red-300 text-sm font-semibold hover:underline bg-red-50 dark:bg-red-900/30 px-3 py-1 rounded-lg transition">
-                      İptal Et
-                    </button>
+            </thead>
+            
+            <tbody className="block md:table-row-group">
+              {siraliSifreler.length === 0 ? (
+                <tr className="block md:table-row">
+                  <td colSpan="6" className="block md:table-cell text-center py-12 text-gray-500 dark:text-gray-400">
+                    <div className="flex flex-col items-center justify-center">
+                      <svg xmlns="http://www.w3.org/2000/svg" className="h-10 w-10 text-gray-300 dark:text-gray-600 mb-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                      </svg>
+                      <span>{sifreler.length === 0 ? "Sistemde kayıtlı şifre bulunmuyor." : "Filtreleme kriterlerinize uyan şifre bulunamadı."}</span>
+                    </div>
                   </td>
                 </tr>
-              ))
-            )}
-          </tbody>
-        </table>
+              ) : (
+                gosterilecekSifreler.map((sifre) => (
+                  <tr key={sifre.pin} className="block md:table-row border border-gray-200 dark:border-gray-700 md:border-0 md:border-b md:border-gray-50 md:dark:border-gray-700/50 bg-white dark:bg-transparent rounded-xl md:rounded-none shadow-sm md:shadow-none mb-4 md:mb-0 hover:bg-gray-50/50 dark:hover:bg-gray-700/50 transition-colors p-4 md:p-0">
+                    
+                    {/* PIN */}
+                    <td className="flex justify-between items-center md:table-cell py-2 md:py-4 px-0 md:px-4 font-mono font-bold text-indigo-600 dark:text-indigo-400">
+                      <span className="md:hidden text-xs font-bold text-gray-500 uppercase">PIN Kodu</span>
+                      <span className="text-right md:text-left">{sifre.pin}</span>
+                    </td>
+                    
+                    {/* Kullanıcı */}
+                    <td className="flex justify-between items-center md:table-cell py-2 md:py-4 px-0 md:px-4 font-semibold text-gray-800 dark:text-white border-t border-gray-100 dark:border-gray-700 md:border-none mt-2 md:mt-0 pt-2 md:pt-4">
+                      <span className="md:hidden text-xs font-bold text-gray-500 uppercase">Kullanıcı</span>
+                      <span className="text-right md:text-left">{sifre.KullaniciAdi}</span>
+                    </td>
+                    
+                    {/* Başlangıç */}
+                    <td className="flex justify-between items-center md:table-cell py-2 md:py-4 px-0 md:px-4 text-gray-600 dark:text-gray-400 text-sm border-t border-gray-100 dark:border-gray-700 md:border-none mt-2 md:mt-0 pt-2 md:pt-4">
+                      <span className="md:hidden text-xs font-bold text-gray-500 uppercase">Başlangıç</span>
+                      <span className="text-right md:text-left whitespace-nowrap">{sifre.Baslangic}</span>
+                    </td>
+                    
+                    {/* Bitiş */}
+                    <td className="flex justify-between items-center md:table-cell py-2 md:py-4 px-0 md:px-4 text-gray-600 dark:text-gray-400 text-sm border-t border-gray-100 dark:border-gray-700 md:border-none mt-2 md:mt-0 pt-2 md:pt-4">
+                      <span className="md:hidden text-xs font-bold text-gray-500 uppercase">Bitiş</span>
+                      <span className="text-right md:text-left whitespace-nowrap">{sifre.Bitis}</span>
+                    </td>
+                    
+                    {/* Durum */}
+                    <td className="flex justify-between items-center md:table-cell py-2 md:py-4 px-0 md:px-4 border-t border-gray-100 dark:border-gray-700 md:border-none mt-2 md:mt-0 pt-2 md:pt-4">
+                      <span className="md:hidden text-xs font-bold text-gray-500 uppercase">Durum</span>
+                      <span className={`px-3 py-1 rounded-full text-xs font-bold border ${sifre.durum.renk.replace('text', 'border').replace('100', '200')} dark:bg-opacity-20 ${sifre.durum.renk}`}>
+                        {sifre.durum.etiket}
+                      </span>
+                    </td>
+                    
+                    {/* İşlem */}
+                    <td className="flex justify-end md:table-cell py-3 md:py-4 px-0 md:px-4 md:text-right border-t border-gray-100 dark:border-gray-700 md:border-none mt-2 md:mt-0 pt-3 md:pt-4">
+                      <button onClick={() => handleSifreIptal(sifre.pin)} className="w-full md:w-auto text-red-500 dark:text-red-400 hover:text-red-700 dark:hover:text-red-300 text-sm font-semibold hover:underline bg-red-50 dark:bg-red-900/30 px-3 py-2 md:py-1 rounded-lg transition text-center">
+                        İptal Et
+                      </button>
+                    </td>
+                  </tr>
+                ))
+              )}
+            </tbody>
+          </table>
+        </div>
 
-        {/* SAYFALAMA BUTONLARI */}
+        {/* SAYFALAMA BUTONLARI (MOBİL UYUMLU) */}
         {toplamSayfa > 1 && (
-        <div className="flex items-center justify-between border-t border-gray-100 dark:border-gray-700 bg-white dark:bg-gray-800 px-4 py-3 sm:px-6 mt-2 rounded-b-lg transition-colors">
-          <div className="hidden sm:flex sm:flex-1 sm:items-center sm:justify-between">
-            <div>
-              <p className="text-sm text-gray-700 dark:text-gray-300">
-                Toplam <span className="font-medium">{filtrelenmisSifreler.length}</span> kayıttan{' '}
-                <span className="font-medium">{ilkKayitIndeksi + 1}</span> -{' '}
-                <span className="font-medium">{Math.min(sonKayitIndeksi, filtrelenmisSifreler.length)}</span> arası gösteriliyor.
-              </p>
-            </div>
-            <div>
-              <nav className="isolate inline-flex -space-x-px rounded-md shadow-sm" aria-label="Pagination">
+        <div className="flex flex-col md:flex-row items-center justify-between border-t border-gray-100 dark:border-gray-700 bg-white dark:bg-gray-800 px-4 py-3 sm:px-6 mt-4 md:mt-2 rounded-b-lg transition-colors gap-4 md:gap-0">
+          <div className="w-full md:flex-1 flex justify-center md:justify-start">
+            <p className="text-sm text-gray-700 dark:text-gray-300 text-center md:text-left">
+              Toplam <span className="font-medium">{filtrelenmisSifreler.length}</span> kayıttan{' '}
+              <span className="font-medium">{ilkKayitIndeksi + 1}</span> -{' '}
+              <span className="font-medium">{Math.min(sonKayitIndeksi, filtrelenmisSifreler.length)}</span> arası.
+            </p>
+          </div>
+          <div className="w-full md:w-auto flex justify-center">
+            <nav className="isolate inline-flex -space-x-px rounded-md shadow-sm overflow-x-auto" aria-label="Pagination">
+              <button
+                onClick={() => setMevcutSayfa(prev => Math.max(prev - 1, 1))}
+                disabled={mevcutSayfa === 1}
+                className={`relative inline-flex items-center rounded-l-md px-2 py-2 text-gray-400 dark:text-gray-500 ring-1 ring-inset ring-gray-300 dark:ring-gray-600 hover:bg-gray-50 dark:hover:bg-gray-700 focus:z-20 focus:outline-offset-0 transition-colors ${mevcutSayfa === 1 ? 'opacity-50 cursor-not-allowed' : ''}`}
+              >
+                <span className="sr-only">Önceki</span>
+                <svg className="h-5 w-5" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
+                  <path fillRule="evenodd" d="M12.79 5.23a.75.75 0 01-.02 1.06L8.832 10l3.938 3.71a.75.75 0 11-1.04 1.08l-4.5-4.25a.75.75 0 010-1.08l4.5-4.25a.75.75 0 011.06.02z" clipRule="evenodd" />
+                </svg>
+              </button>
+              
+              {[...Array(toplamSayfa)].map((_, index) => (
                 <button
-                  onClick={() => setMevcutSayfa(prev => Math.max(prev - 1, 1))}
-                  disabled={mevcutSayfa === 1}
-                  className={`relative inline-flex items-center rounded-l-md px-2 py-2 text-gray-400 dark:text-gray-500 ring-1 ring-inset ring-gray-300 dark:ring-gray-600 hover:bg-gray-50 dark:hover:bg-gray-700 focus:z-20 focus:outline-offset-0 transition-colors ${mevcutSayfa === 1 ? 'opacity-50 cursor-not-allowed' : ''}`}
+                  key={index}
+                  onClick={() => setMevcutSayfa(index + 1)}
+                  className={`relative inline-flex items-center px-4 py-2 text-sm font-semibold focus:z-20 transition-colors ${mevcutSayfa === index + 1 ? 'z-10 bg-indigo-600 text-white focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600' : 'text-gray-900 dark:text-gray-300 ring-1 ring-inset ring-gray-300 dark:ring-gray-600 hover:bg-gray-50 dark:hover:bg-gray-700 focus:outline-offset-0'}`}
                 >
-                  <span className="sr-only">Önceki</span>
-                  <svg className="h-5 w-5" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
-                    <path fillRule="evenodd" d="M12.79 5.23a.75.75 0 01-.02 1.06L8.832 10l3.938 3.71a.75.75 0 11-1.04 1.08l-4.5-4.25a.75.75 0 010-1.08l4.5-4.25a.75.75 0 011.06.02z" clipRule="evenodd" />
-                  </svg>
+                  {index + 1}
                 </button>
-                
-                {[...Array(toplamSayfa)].map((_, index) => (
-                  <button
-                    key={index}
-                    onClick={() => setMevcutSayfa(index + 1)}
-                    className={`relative inline-flex items-center px-4 py-2 text-sm font-semibold focus:z-20 transition-colors ${mevcutSayfa === index + 1 ? 'z-10 bg-indigo-600 text-white focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600' : 'text-gray-900 dark:text-gray-300 ring-1 ring-inset ring-gray-300 dark:ring-gray-600 hover:bg-gray-50 dark:hover:bg-gray-700 focus:outline-offset-0'}`}
-                  >
-                    {index + 1}
-                  </button>
-                ))}
+              ))}
 
-                <button
-                  onClick={() => setMevcutSayfa(prev => Math.min(prev + 1, toplamSayfa))}
-                  disabled={mevcutSayfa === toplamSayfa}
-                  className={`relative inline-flex items-center rounded-r-md px-2 py-2 text-gray-400 dark:text-gray-500 ring-1 ring-inset ring-gray-300 dark:ring-gray-600 hover:bg-gray-50 dark:hover:bg-gray-700 focus:z-20 focus:outline-offset-0 transition-colors ${mevcutSayfa === toplamSayfa ? 'opacity-50 cursor-not-allowed' : ''}`}
-                >
-                  <span className="sr-only">Sonraki</span>
-                  <svg className="h-5 w-5" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
-                    <path fillRule="evenodd" d="M7.21 14.77a.75.75 0 01.02-1.06L11.168 10 7.23 6.29a.75.75 0 111.04-1.08l4.5 4.25a.75.75 0 010 1.08l-4.5 4.25a.75.75 0 01-1.06-.02z" clipRule="evenodd" />
-                  </svg>
-                </button>
-              </nav>
-            </div>
+              <button
+                onClick={() => setMevcutSayfa(prev => Math.min(prev + 1, toplamSayfa))}
+                disabled={mevcutSayfa === toplamSayfa}
+                className={`relative inline-flex items-center rounded-r-md px-2 py-2 text-gray-400 dark:text-gray-500 ring-1 ring-inset ring-gray-300 dark:ring-gray-600 hover:bg-gray-50 dark:hover:bg-gray-700 focus:z-20 focus:outline-offset-0 transition-colors ${mevcutSayfa === toplamSayfa ? 'opacity-50 cursor-not-allowed' : ''}`}
+              >
+                <span className="sr-only">Sonraki</span>
+                <svg className="h-5 w-5" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
+                  <path fillRule="evenodd" d="M7.21 14.77a.75.75 0 01.02-1.06L11.168 10 7.23 6.29a.75.75 0 111.04-1.08l4.5 4.25a.75.75 0 010 1.08l-4.5-4.25a.75.75 0 01-1.06-.02z" clipRule="evenodd" />
+                </svg>
+              </button>
+            </nav>
           </div>
         </div>
         )}

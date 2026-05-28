@@ -194,37 +194,60 @@ export default function Dashboard() {
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         
-        {/* LOGLAR TABLOSU */}
+        {/* LOGLAR TABLOSU / MOBİLDE KART YAPISI */}
         <div className="lg:col-span-2 bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-100 dark:border-gray-700 p-6 transition-colors">
           <div className="flex justify-between items-center mb-4">
             <h3 className="text-lg font-bold text-gray-800 dark:text-white">Son Sistem Hareketleri</h3>
             <span className="text-xs text-gray-400 dark:text-gray-500">Canlı Akış</span>
           </div>
-          <div className="overflow-x-auto">
-            <table className="w-full text-left">
-              <thead>
+          
+          <div className="w-full">
+            <table className="w-full text-left block md:table">
+              {/* Masaüstünde görünen, mobilde gizlenen başlıklar */}
+              <thead className="hidden md:table-header-group">
                 <tr className="border-b border-gray-100 dark:border-gray-700 text-gray-500 dark:text-gray-400 text-xs uppercase tracking-wider">
                   <th className="py-3 px-4 font-semibold">Tarih & Saat</th>
                   <th className="py-3 px-4 font-semibold">Kullanıcı / PIN</th>
                   <th className="py-3 px-4 font-semibold text-right">Durum</th>
                 </tr>
               </thead>
-              <tbody>
+              
+              <tbody className="block md:table-row-group">
                 {sonLoglar.length === 0 ? (
-                  <tr><td colSpan="3" className="text-center py-8 text-gray-400 dark:text-gray-500 text-sm">Henüz sistem hareketi yok.</td></tr>
+                  <tr className="block md:table-row">
+                    <td colSpan="3" className="block md:table-cell text-center py-8 text-gray-400 dark:text-gray-500 text-sm">
+                      Henüz sistem hareketi yok.
+                    </td>
+                  </tr>
                 ) : (
                   sonLoglar.map(log => (
-                    <tr key={log.id} className="border-b border-gray-50 dark:border-gray-700/50 hover:bg-gray-50 dark:hover:bg-gray-700/50 transition-colors">
-                      <td className="py-3 px-4 text-sm text-gray-600 dark:text-gray-300 whitespace-nowrap">{log.IslemZamani}</td>
-                      <td className="py-3 px-4">
-                        <div className="text-sm font-semibold text-gray-800 dark:text-white">{log.KullaniciAdi || 'Bilinmeyen'}</div>
-                        <div className="text-xs text-indigo-500 dark:text-indigo-400 font-mono mt-0.5">{log.KullanilanPIN}</div>
+                    <tr key={log.id} className="block md:table-row border border-gray-200 dark:border-gray-700 md:border-0 md:border-b md:border-gray-50 md:dark:border-gray-700/50 bg-gray-50/50 md:bg-transparent dark:bg-gray-800/50 md:dark:bg-transparent rounded-lg md:rounded-none mb-3 md:mb-0 p-3 md:p-0 hover:bg-gray-50 dark:hover:bg-gray-700/50 transition-colors">
+                      
+                      {/* Tarih & Saat Hücresi */}
+                      <td className="flex justify-between items-center md:table-cell py-2 md:py-3 px-0 md:px-4 text-sm text-gray-600 dark:text-gray-300">
+                        <span className="md:hidden text-xs font-bold text-gray-500 uppercase">Zaman</span>
+                        <span className="whitespace-nowrap">{log.IslemZamani}</span>
                       </td>
-                      <td className="py-3 px-4 text-right">
-                        {log.Durum === 'Basarili Giris' && <span className="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-green-100 dark:bg-green-900/30 text-green-800 dark:text-green-400">Başarılı</span>}
-                        {log.Durum === 'Hatali Sifre' && <span className="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-red-100 dark:bg-red-900/30 text-red-800 dark:text-red-400">Hatalı</span>}
-                        {log.Durum === 'Yetkisiz Saat' && <span className="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-orange-100 dark:bg-orange-900/30 text-orange-800 dark:text-orange-400">Yetkisiz</span>}
+                      
+                      {/* Kullanıcı / PIN Hücresi */}
+                      <td className="flex justify-between items-center md:items-start md:table-cell py-2 md:py-3 px-0 md:px-4 border-t border-gray-200 dark:border-gray-700 md:border-none">
+                        <span className="md:hidden text-xs font-bold text-gray-500 uppercase">Kişi / PIN</span>
+                        <div className="text-right md:text-left">
+                          <div className="text-sm font-semibold text-gray-800 dark:text-white">{log.KullaniciAdi || 'Bilinmeyen'}</div>
+                          <div className="text-xs text-indigo-500 dark:text-indigo-400 font-mono mt-0.5">{log.KullanilanPIN}</div>
+                        </div>
                       </td>
+                      
+                      {/* Durum Hücresi */}
+                      <td className="flex justify-between items-center md:table-cell py-2 md:py-3 px-0 md:px-4 md:text-right border-t border-gray-200 dark:border-gray-700 md:border-none">
+                        <span className="md:hidden text-xs font-bold text-gray-500 uppercase">Durum</span>
+                        <div>
+                          {log.Durum === 'Basarili Giris' && <span className="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-green-100 dark:bg-green-900/30 text-green-800 dark:text-green-400">Başarılı</span>}
+                          {log.Durum === 'Hatali Sifre' && <span className="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-red-100 dark:bg-red-900/30 text-red-800 dark:text-red-400">Hatalı</span>}
+                          {log.Durum === 'Yetkisiz Saat' && <span className="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-orange-100 dark:bg-orange-900/30 text-orange-800 dark:text-orange-400">Yetkisiz</span>}
+                        </div>
+                      </td>
+                      
                     </tr>
                   ))
                 )}
@@ -233,7 +256,7 @@ export default function Dashboard() {
           </div>
         </div>
 
-        {/* YENİ MODÜL: SİSTEM & EKRAN KONTROLÜ */}
+        {/* SİSTEM & EKRAN KONTROLÜ MODÜLÜ (Değişmedi) */}
         <div className={`rounded-xl shadow-sm p-6 border transition-colors duration-300 ${cihazDurumu.kilitli && !zamanliKilit ? 'bg-red-50 dark:bg-red-900/20 border-red-200 dark:border-red-900/30' : (cihazDurumu.kilitli && zamanliKilit ? 'bg-orange-50 dark:bg-orange-900/20 border-orange-200 dark:border-orange-900/30' : 'bg-white dark:bg-gray-800 border-gray-100 dark:border-gray-700')}`}>
           <div className="flex items-center justify-between mb-4">
             <h3 className={`text-lg font-bold ${cihazDurumu.kilitli ? (zamanliKilit ? 'text-orange-800 dark:text-orange-400' : 'text-red-800 dark:text-red-400') : 'text-gray-800 dark:text-white'}`}>Cihaz Kontrolü</h3>

@@ -231,7 +231,7 @@ export default function Kullanicilar() {
 
           <button 
             onClick={() => setIsEkleModalOpen(true)}
-            className="bg-indigo-600 hover:bg-indigo-700 text-white px-4 py-2 rounded-lg text-sm font-medium transition shadow-sm"
+            className="bg-indigo-600 hover:bg-indigo-700 text-white px-4 py-2 rounded-lg text-sm font-medium transition shadow-sm whitespace-nowrap"
           >
             + Yeni Ekle
           </button>
@@ -245,10 +245,13 @@ export default function Kullanicilar() {
         </div>
       )}
 
-      {/* KULLANICI TABLOSU */}
-      <div className="overflow-x-auto">
-        <table className="w-full text-left">
-          <thead>
+      {/* KULLANICI TABLOSU / MOBİLDE KART YAPISI */}
+      <div className="w-full">
+        {/* 'block md:table' ile mobilde alt alta blok, bilgisayarda tablo yapıyoruz */}
+        <table className="w-full text-left block md:table">
+          
+          {/* Mobilde başlık satırını tamamen gizliyoruz */}
+          <thead className="hidden md:table-header-group">
             <tr className="border-b border-gray-200 dark:border-gray-700 text-gray-500 dark:text-gray-400 text-sm bg-gray-50 dark:bg-gray-800/50 transition-colors">
               <th className="py-3 px-4">Ad Soyad</th>
               <th className="py-3 px-4">E-posta</th>
@@ -256,33 +259,50 @@ export default function Kullanicilar() {
               <th className="py-3 px-4 text-right">İşlemler</th>
             </tr>
           </thead>
-          <tbody>
+          
+          <tbody className="block md:table-row-group">
             {filtrelenmisKullanicilar.length === 0 ? (
-              <tr>
-                <td colSpan="4" className="text-center py-12 text-gray-400 dark:text-gray-500">
+              <tr className="block md:table-row">
+                <td colSpan="4" className="block md:table-cell text-center py-12 text-gray-400 dark:text-gray-500">
                   {kullanicilar.length === 0 ? "Henüz kullanıcı yok." : "Arama kriterine uygun kullanıcı bulunamadı."}
                 </td>
               </tr>
             ) : (
               gosterilecekKullanicilar.map((u, index) => {
-                
-                // son satırlarda açılan menünün ekran dışına taşmaması için kontrol
                 const isSonSatirlar = gosterilecekKullanicilar.length > 2 && index >= gosterilecekKullanicilar.length - 2;
 
               return (
-                <tr key={u.id} className="border-b border-gray-100 dark:border-gray-700/50 hover:bg-gray-50 dark:hover:bg-gray-700/50 transition-colors">
-                  <td className="py-4 px-4 font-medium text-gray-800 dark:text-white">{u.Ad}</td>
-                  <td className="py-4 px-4 text-gray-600 dark:text-gray-300">{u.Email}</td>
-                  <td className="py-4 px-4 text-gray-600 dark:text-gray-400 font-mono">{u.Sifre || '---'}</td>
-                  <td className="py-4 px-4 text-right relative">
-                    <button onClick={() => setAcikMenuId(acikMenuId === u.id ? null : u.id)} className="text-gray-400 dark:text-gray-500 hover:text-gray-700 dark:hover:text-gray-200 p-2 rounded-full hover:bg-gray-200 dark:hover:bg-gray-600 transition-colors">
+                <tr key={u.id} className="block md:table-row border border-gray-200 dark:border-gray-700 md:border-0 md:border-b md:border-gray-100 md:dark:border-gray-700/50 bg-white dark:bg-transparent rounded-xl md:rounded-none shadow-sm md:shadow-none mb-4 md:mb-0 hover:bg-gray-50 dark:hover:bg-gray-700/50 transition-colors p-4 md:p-0">
+                  
+                  {/* Ad Soyad Hücresi */}
+                  <td className="flex justify-between items-center md:table-cell py-2 md:py-4 px-0 md:px-4">
+                    {/* Sadece mobilde görünen etiket */}
+                    <span className="md:hidden text-xs font-bold text-gray-500 uppercase">Ad Soyad</span>
+                    <span className="font-medium text-gray-800 dark:text-white">{u.Ad}</span>
+                  </td>
+                  
+                  {/* E-posta Hücresi */}
+                  <td className="flex justify-between items-center md:table-cell py-2 md:py-4 px-0 md:px-4 border-t border-gray-100 dark:border-gray-700 md:border-none mt-2 md:mt-0 pt-2 md:pt-4">
+                    <span className="md:hidden text-xs font-bold text-gray-500 uppercase">E-posta</span>
+                    <span className="text-gray-600 dark:text-gray-300">{u.Email}</span>
+                  </td>
+                  
+                  {/* Şifre Hücresi */}
+                  <td className="flex justify-between items-center md:table-cell py-2 md:py-4 px-0 md:px-4 border-t border-gray-100 dark:border-gray-700 md:border-none mt-2 md:mt-0 pt-2 md:pt-4">
+                    <span className="md:hidden text-xs font-bold text-gray-500 uppercase">Giriş Şifresi</span>
+                    <span className="text-gray-600 dark:text-gray-400 font-mono">{u.Sifre || '---'}</span>
+                  </td>
+                  
+                  {/* İşlemler (3 Nokta) Hücresi */}
+                  <td className="flex justify-end md:table-cell py-2 md:py-4 px-0 md:px-4 text-right relative border-t border-gray-100 dark:border-gray-700 md:border-none mt-2 md:mt-0 pt-3 md:pt-4">
+                    <button onClick={() => setAcikMenuId(acikMenuId === u.id ? null : u.id)} className="text-gray-400 dark:text-gray-500 hover:text-gray-700 dark:hover:text-gray-200 p-2 rounded-full hover:bg-gray-200 dark:hover:bg-gray-600 transition-colors bg-gray-50 dark:bg-gray-800 md:bg-transparent">
                       <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
                         <path d="M10 6a2 2 0 110-4 2 2 0 010 4zM10 12a2 2 0 110-4 2 2 0 010 4zM10 18a2 2 0 110-4 2 2 0 010 4z" />
                       </svg>
                     </button>
 
                     {acikMenuId === u.id && (
-                      <div className={`absolute right-12 w-40 bg-white dark:bg-gray-800 border border-gray-100 dark:border-gray-600 rounded-lg shadow-2xl z-50 py-1 overflow-hidden transition-colors ${isSonSatirlar ? 'bottom-10 mb-1' : 'top-10 mt-1'}`}>
+                      <div className={`absolute right-0 md:right-12 w-40 bg-white dark:bg-gray-800 border border-gray-100 dark:border-gray-600 rounded-lg shadow-2xl z-50 py-1 overflow-hidden transition-colors ${isSonSatirlar ? 'bottom-12 md:bottom-10 mb-1' : 'top-12 md:top-10 mt-1'}`}>
                         <button onClick={() => { setSeciliKullanici(u); setIsPinModalOpen(true); setAcikMenuId(null); }} className="w-full text-left px-4 py-2 text-sm text-indigo-600 dark:text-indigo-400 hover:bg-indigo-50 dark:hover:bg-gray-700 font-medium transition-colors">PIN Ata</button>
                         <button onClick={() => { setSeciliKullanici(u); setEditForm({ Ad: u.Ad, Email: u.Email, Sifre: u.Sifre || '' }); setIsEditModalOpen(true); setAcikMenuId(null); }} className="w-full text-left px-4 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors">Düzenle</button>
                         <div className="border-t border-gray-100 dark:border-gray-600 my-1"></div>
@@ -298,51 +318,49 @@ export default function Kullanicilar() {
         </table>
 
       {toplamSayfa > 1 && (
-        <div className="flex items-center justify-between border-t border-gray-100 dark:border-gray-700 bg-white dark:bg-gray-800 px-4 py-3 sm:px-6 mt-2 rounded-b-lg transition-colors">
-          <div className="hidden sm:flex sm:flex-1 sm:items-center sm:justify-between">
-            <div>
-              <p className="text-sm text-gray-700 dark:text-gray-300">
-                Toplam <span className="font-medium">{kullanicilar.length}</span> kayıttan{' '}
-                <span className="font-medium">{ilkKayitIndeksi + 1}</span> -{' '}
-                <span className="font-medium">{Math.min(sonKayitIndeksi, kullanicilar.length)}</span> arası gösteriliyor.
-              </p>
-            </div>
-            <div>
-              <nav className="isolate inline-flex -space-x-px rounded-md shadow-sm" aria-label="Pagination">
+        <div className="flex flex-col md:flex-row items-center justify-between border-t border-gray-100 dark:border-gray-700 bg-white dark:bg-gray-800 px-4 py-3 sm:px-6 mt-4 md:mt-2 rounded-b-lg transition-colors gap-4 md:gap-0">
+          <div className="w-full md:flex-1 flex justify-center md:justify-start">
+            <p className="text-sm text-gray-700 dark:text-gray-300 text-center md:text-left">
+              Toplam <span className="font-medium">{kullanicilar.length}</span> kayıttan{' '}
+              <span className="font-medium">{ilkKayitIndeksi + 1}</span> -{' '}
+              <span className="font-medium">{Math.min(sonKayitIndeksi, kullanicilar.length)}</span> arası.
+            </p>
+          </div>
+          <div className="w-full md:w-auto flex justify-center">
+            <nav className="isolate inline-flex -space-x-px rounded-md shadow-sm overflow-x-auto" aria-label="Pagination">
+              <button
+                onClick={() => setMevcutSayfa(prev => Math.max(prev - 1, 1))}
+                disabled={mevcutSayfa === 1}
+                className={`relative inline-flex items-center rounded-l-md px-2 py-2 text-gray-400 dark:text-gray-500 ring-1 ring-inset ring-gray-300 dark:ring-gray-600 hover:bg-gray-50 dark:hover:bg-gray-700 focus:z-20 focus:outline-offset-0 transition-colors ${mevcutSayfa === 1 ? 'opacity-50 cursor-not-allowed' : ''}`}
+              >
+                <span className="sr-only">Önceki</span>
+                <svg className="h-5 w-5" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
+                  <path fillRule="evenodd" d="M12.79 5.23a.75.75 0 01-.02 1.06L8.832 10l3.938 3.71a.75.75 0 11-1.04 1.08l-4.5-4.25a.75.75 0 010-1.08l4.5-4.25a.75.75 0 011.06.02z" clipRule="evenodd" />
+                </svg>
+              </button>
+              
+              {/* Sayfa Numaraları */}
+              {[...Array(toplamSayfa)].map((_, index) => (
                 <button
-                  onClick={() => setMevcutSayfa(prev => Math.max(prev - 1, 1))}
-                  disabled={mevcutSayfa === 1}
-                  className={`relative inline-flex items-center rounded-l-md px-2 py-2 text-gray-400 dark:text-gray-500 ring-1 ring-inset ring-gray-300 dark:ring-gray-600 hover:bg-gray-50 dark:hover:bg-gray-700 focus:z-20 focus:outline-offset-0 transition-colors ${mevcutSayfa === 1 ? 'opacity-50 cursor-not-allowed' : ''}`}
+                  key={index}
+                  onClick={() => setMevcutSayfa(index + 1)}
+                  className={`relative inline-flex items-center px-4 py-2 text-sm font-semibold focus:z-20 transition-colors ${mevcutSayfa === index + 1 ? 'z-10 bg-indigo-600 text-white focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600' : 'text-gray-900 dark:text-gray-300 ring-1 ring-inset ring-gray-300 dark:ring-gray-600 hover:bg-gray-50 dark:hover:bg-gray-700 focus:outline-offset-0'}`}
                 >
-                  <span className="sr-only">Önceki</span>
-                  <svg className="h-5 w-5" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
-                    <path fillRule="evenodd" d="M12.79 5.23a.75.75 0 01-.02 1.06L8.832 10l3.938 3.71a.75.75 0 11-1.04 1.08l-4.5-4.25a.75.75 0 010-1.08l4.5-4.25a.75.75 0 011.06.02z" clipRule="evenodd" />
-                  </svg>
+                  {index + 1}
                 </button>
-                
-                {/* Sayfa Numaraları */}
-                {[...Array(toplamSayfa)].map((_, index) => (
-                  <button
-                    key={index}
-                    onClick={() => setMevcutSayfa(index + 1)}
-                    className={`relative inline-flex items-center px-4 py-2 text-sm font-semibold focus:z-20 transition-colors ${mevcutSayfa === index + 1 ? 'z-10 bg-indigo-600 text-white focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600' : 'text-gray-900 dark:text-gray-300 ring-1 ring-inset ring-gray-300 dark:ring-gray-600 hover:bg-gray-50 dark:hover:bg-gray-700 focus:outline-offset-0'}`}
-                  >
-                    {index + 1}
-                  </button>
-                ))}
+              ))}
 
-                <button
-                  onClick={() => setMevcutSayfa(prev => Math.min(prev + 1, toplamSayfa))}
-                  disabled={mevcutSayfa === toplamSayfa}
-                  className={`relative inline-flex items-center rounded-r-md px-2 py-2 text-gray-400 dark:text-gray-500 ring-1 ring-inset ring-gray-300 dark:ring-gray-600 hover:bg-gray-50 dark:hover:bg-gray-700 focus:z-20 focus:outline-offset-0 transition-colors ${mevcutSayfa === toplamSayfa ? 'opacity-50 cursor-not-allowed' : ''}`}
-                >
-                  <span className="sr-only">Sonraki</span>
-                  <svg className="h-5 w-5" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
-                    <path fillRule="evenodd" d="M7.21 14.77a.75.75 0 01.02-1.06L11.168 10 7.23 6.29a.75.75 0 111.04-1.08l4.5 4.25a.75.75 0 010 1.08l-4.5 4.25a.75.75 0 01-1.06-.02z" clipRule="evenodd" />
-                  </svg>
-                </button>
-              </nav>
-            </div>
+              <button
+                onClick={() => setMevcutSayfa(prev => Math.min(prev + 1, toplamSayfa))}
+                disabled={mevcutSayfa === toplamSayfa}
+                className={`relative inline-flex items-center rounded-r-md px-2 py-2 text-gray-400 dark:text-gray-500 ring-1 ring-inset ring-gray-300 dark:ring-gray-600 hover:bg-gray-50 dark:hover:bg-gray-700 focus:z-20 focus:outline-offset-0 transition-colors ${mevcutSayfa === toplamSayfa ? 'opacity-50 cursor-not-allowed' : ''}`}
+              >
+                <span className="sr-only">Sonraki</span>
+                <svg className="h-5 w-5" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
+                  <path fillRule="evenodd" d="M7.21 14.77a.75.75 0 01.02-1.06L11.168 10 7.23 6.29a.75.75 0 111.04-1.08l4.5 4.25a.75.75 0 010 1.08l-4.5 4.25a.75.75 0 01-1.06-.02z" clipRule="evenodd" />
+                </svg>
+              </button>
+            </nav>
           </div>
         </div>
       )}
