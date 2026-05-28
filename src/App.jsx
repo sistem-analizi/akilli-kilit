@@ -29,21 +29,26 @@ function App() {
 
   return (
     <Router>
-      {/* Ana kapsayıcı: Koyu temada arka planı koyu gri yapıyoruz */}
-      <div className="flex h-screen bg-gray-100 dark:bg-gray-900 transition-colors duration-300">
+      {/* Ana kapsayıcı: Mobilde alt alta (flex-col), bilgisayarda yan yana (md:flex-row) */}
+      <div className="flex flex-col md:flex-row h-screen bg-gray-100 dark:bg-gray-900 transition-colors duration-300 overflow-hidden">
         
-        {/* Sol Menü (Sidebar) */}
-        <div className="w-64 bg-white dark:bg-gray-800 shadow-lg transition-colors duration-300">
-          <div className="p-6">
-            <h2 className="text-2xl font-black text-indigo-600 dark:text-indigo-400">Akıllı Kilit</h2>
-            <p className="text-sm text-gray-500 dark:text-gray-400">Yönetim Paneli</p>
+        {/* Sol Menü (Sidebar): Mobilde üstte yatay, bilgisayarda solda dikey */}
+        <div className="w-full md:w-64 bg-white dark:bg-gray-800 shadow-lg transition-colors duration-300 flex-shrink-0 flex flex-col">
+          <div className="p-4 md:p-6 flex justify-between items-center">
+            <div>
+              <h2 className="text-xl md:text-2xl font-black text-indigo-600 dark:text-indigo-400">Akıllı Kilit</h2>
+              <p className="text-xs md:text-sm text-gray-500 dark:text-gray-400">Yönetim Paneli</p>
+            </div>
           </div>
-          <nav className="mt-6 flex flex-col gap-2 px-4">
-           {/* NavLink kullanımı: 'isActive' true ise aktif stili, false ise normal stili uygular */}
+
+          {/* Menü Linkleri: Mobilde yatay kaydırılabilir, bilgisayarda dikey listelenir */}
+          <nav className="mt-2 md:mt-6 flex flex-row md:flex-col overflow-x-auto md:overflow-visible gap-2 px-2 md:px-4 pb-2 md:pb-0 scrollbar-hide">
+            
+            {/* NavLink'lere 'whitespace-nowrap' eklendi ki mobilde metinler alt satıra kayıp çirkin durmasın */}
             <NavLink 
               to="/" 
               className={({ isActive }) => 
-                `px-4 py-3 rounded-lg font-medium transition ${
+                `px-4 py-3 rounded-lg font-medium transition whitespace-nowrap ${
                   isActive 
                   ? 'bg-indigo-50 dark:bg-indigo-900/50 text-indigo-700 dark:text-indigo-300' 
                   : 'text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700'
@@ -56,7 +61,7 @@ function App() {
             <NavLink 
               to="/istekler" 
               className={({ isActive }) => 
-                `px-4 py-3 rounded-lg font-medium transition ${
+                `px-4 py-3 rounded-lg font-medium transition whitespace-nowrap ${
                   isActive 
                   ? 'bg-indigo-50 dark:bg-indigo-900/50 text-indigo-700 dark:text-indigo-300' 
                   : 'text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700'
@@ -69,7 +74,7 @@ function App() {
             <NavLink 
               to="/loglar" 
               className={({ isActive }) => 
-                `px-4 py-3 rounded-lg font-medium transition ${
+                `px-4 py-3 rounded-lg font-medium transition whitespace-nowrap ${
                   isActive 
                   ? 'bg-indigo-50 dark:bg-indigo-900/50 text-indigo-700 dark:text-indigo-300' 
                   : 'text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700'
@@ -82,7 +87,7 @@ function App() {
             <NavLink 
               to="/kullanicilar" 
               className={({ isActive }) => 
-                `px-4 py-3 rounded-lg font-medium transition ${
+                `px-4 py-3 rounded-lg font-medium transition whitespace-nowrap ${
                   isActive 
                   ? 'bg-indigo-50 dark:bg-indigo-900/50 text-indigo-700 dark:text-indigo-300' 
                   : 'text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700'
@@ -95,7 +100,7 @@ function App() {
             <NavLink 
               to="/sifreler" 
               className={({ isActive }) => 
-                `px-4 py-3 rounded-lg font-medium transition ${
+                `px-4 py-3 rounded-lg font-medium transition whitespace-nowrap ${
                   isActive 
                   ? 'bg-indigo-50 dark:bg-indigo-900/50 text-indigo-700 dark:text-indigo-300' 
                   : 'text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700'
@@ -110,10 +115,10 @@ function App() {
         {/* Sağ Taraf (Değişen Sayfa İçeriği) */}
         <div className="flex-1 overflow-y-auto">
           {/* Header */}
-          <header className="bg-white dark:bg-gray-800 shadow-sm px-8 py-4 flex items-center justify-between transition-colors duration-300">
-            <div className="flex-1"></div> {/* Ortalamak için boş div */}
+          <header className="bg-white dark:bg-gray-800 shadow-sm px-4 md:px-8 py-4 flex items-center justify-between transition-colors duration-300">
+            <div className="flex-1 hidden md:block"></div> {/* Ortalamak için boş div, mobilde gizlenir */}
             
-            <h1 className="text-xl font-semibold text-gray-800 dark:text-white">Hoş Geldin, Admin</h1>
+            <h1 className="text-lg md:text-xl font-semibold text-gray-800 dark:text-white truncate">Hoş Geldin, Admin</h1>
             
             <div className="flex-1 flex justify-end">
               {/* TEMA DEĞİŞTİRME BUTONU */}
@@ -133,7 +138,7 @@ function App() {
             </div>
           </header>
           
-          <main className="p-8">
+          <main className="p-4 md:p-8">
             <Routes>
               <Route path="/" element={<Dashboard />} />
               <Route path="/istekler" element={<Istekler />} />
