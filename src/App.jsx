@@ -25,9 +25,17 @@ function App() {
     if (darkTema) {
       document.documentElement.classList.add('dark');
       localStorage.setItem('tema', 'dark');
+      // YENİ: Eğer WebView içindeyse Mobile 'dark' mesajı gönder
+      if (window.ReactNativeWebView) {
+        window.ReactNativeWebView.postMessage('dark');
+      }
     } else {
       document.documentElement.classList.remove('dark');
       localStorage.setItem('tema', 'light');
+      // YENİ: Eğer WebView içindeyse Mobile 'light' mesajı gönder
+      if (window.ReactNativeWebView) {
+        window.ReactNativeWebView.postMessage('light');
+      }
     }
   }, [darkTema]);
 
